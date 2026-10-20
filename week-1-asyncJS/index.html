@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>100xDevs — JS Foundations & Async Engineering Companion</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-beige: #F6F3EB;
+      --bg-card: #EFECE3;
+      --bg-elevated: #E6E1D5;
+      --ink-black: #121212;
+      --ink-muted: #52504C;
+    }
+
+    body {
+      background-color: var(--bg-beige);
+      color: var(--ink-black);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .serif-title {
+      font-family: 'Instrument Serif', Georgia, serif;
+    }
+
+    code, pre, .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Editorial brutalist-lite borders & shadows */
+    .editorial-card {
+      background-color: var(--bg-card);
+      border: 1.5px solid var(--ink-black);
+      box-shadow: 4px 4px 0px var(--ink-black);
+    }
+
+    .editorial-card-sm {
+      background-color: var(--bg-card);
+      border: 1px solid var(--ink-black);
+      box-shadow: 2px 2px 0px var(--ink-black);
+    }
+
+    .editorial-btn {
+      border: 1.5px solid var(--ink-black);
+      box-shadow: 2px 2px 0px var(--ink-black);
+      transition: all 0.15s ease;
+    }
+
+    .editorial-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0px var(--ink-black);
+    }
+
+    .editorial-btn:active {
+      transform: translate(1px, 1px);
+      box-shadow: 0px 0px 0px var(--ink-black);
+    }
+
+    .nav-active {
+      background-color: var(--ink-black) !important;
+      color: var(--bg-beige) !important;
+      font-weight: 600;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #EAE5D9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #121212;
+      border-radius: 3px;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.95); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+      animation: popIn 0.2s ease-out forwards;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col lg:flex-row selection:bg-[#121212] selection:text-[#F6F3EB]">
+
+  <!-- MOBILE HEADER -->
+  <header class="lg:hidden flex items-center justify-between px-5 py-4 border-b-2 border-[#121212] bg-[#EFECE3] sticky top-0 z-30">
+    <div>
+      <span class="text-[11px] mono uppercase tracking-widest px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">100xDevs • Harkirat</span>
+      <h1 class="serif-title text-2xl leading-none mt-1">JS & Async Interactive Notes</h1>
+    </div>
+    <button onclick="toggleMobileMenu()" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded text-xs mono font-semibold">
+      ☰ Modules
+    </button>
+  </header>
+
+  <!-- LEFT SIDEBAR NAVIGATION -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-80 bg-[#EFECE3] border-r-2 border-[#121212] flex flex-col transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-200 ease-in-out shrink-0">
+    <!-- Brand Header -->
+    <div class="p-6 border-b-2 border-[#121212]">
+      <div class="flex items-center justify-between">
+        <span class="px-2.5 py-0.5 text-[11px] font-bold bg-[#121212] text-[#F6F3EB] rounded-full mono uppercase tracking-wider">100xDevs Cohort</span>
+        <span class="text-xs mono text-[#52504C]">Oct 20, 2026</span>
+      </div>
+      <h1 class="serif-title text-3xl text-[#121212] mt-3 leading-tight">Interactive Field Manual</h1>
+      <p class="text-xs text-[#52504C] mt-1">Instructor: Harkirat Singh • Complete 8-File Study Edition</p>
+      
+      <!-- Search Bar -->
+      <div class="mt-4 relative">
+        <input 
+          type="text" 
+          id="topic-search" 
+          oninput="filterNavigation(this.value)"
+          placeholder="Filter notes (e.g. GIL, Promise, I/O)..." 
+          class="w-full bg-[#F6F3EB] border border-[#121212] rounded-lg px-3 py-1.5 text-xs mono placeholder-[#52504C] focus:outline-none focus:ring-2 focus:ring-[#121212]"
+        />
+      </div>
+    </div>
+
+    <!-- Navigation List -->
+    <nav class="flex-1 overflow-y-auto p-4 space-y-6" id="nav-container">
+      <!-- Section 1: JS 101 Foundations -->
+      <div class="nav-group">
+        <div class="px-2 pb-1.5 text-[11px] font-bold uppercase tracking-widest text-[#52504C] mono border-b border-[#121212]/20">
+          Part I • JS 101 Foundations
+        </div>
+        <div class="mt-2 space-y-1.5">
+          <button onclick="switchModule('js-properties')" id="btn-js-properties" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>1. Properties of JS & Runtimes</span>
+            <span class="mono text-[10px] opacity-70">01</span>
+          </button>
+          <button onclick="switchModule('complex-types')" id="btn-complex-types" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>2. Complex Types & 5 Assignments</span>
+            <span class="mono text-[10px] px-1.5 py-0.5 bg-[#121212]/10 rounded">LAB</span>
+          </button>
+          <button onclick="switchModule('sync-cpu-io')" id="btn-sync-cpu-io" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>3. Sync Code & CPU vs I/O Tasks</span>
+            <span class="mono text-[10px] opacity-70">03</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Section 2: Winter Camp Class 1 -->
+      <div class="nav-group">
+        <div class="px-2 pb-1.5 text-[11px] font-bold uppercase tracking-widest text-[#52504C] mono border-b border-[#121212]/20">
+          Part II • Winter Camp Class 1
+        </div>
+        <div class="mt-2 space-y-1.5">
+          <button onclick="switchModule('event-loop-arch')" id="btn-event-loop-arch" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>4. JS Async Architecture & Loupe</span>
+            <span class="mono text-[10px] px-1.5 py-0.5 bg-[#121212]/10 rounded">SIM</span>
+          </button>
+          <button onclick="switchModule('callbacks-deep')" id="btn-callbacks-deep" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>5. Callbacks & Concurrent File Sync</span>
+            <span class="mono text-[10px] px-1.5 py-0.5 bg-[#121212]/10 rounded">SIM</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Section 3: Winter Camp Class 2 -->
+      <div class="nav-group">
+        <div class="px-2 pb-1.5 text-[11px] font-bold uppercase tracking-widest text-[#52504C] mono border-b border-[#121212]/20">
+          Part III • Winter Camp Class 2
+        </div>
+        <div class="mt-2 space-y-1.5">
+          <button onclick="switchModule('promises-chaining')" id="btn-promises-chaining" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>6. Promises, States & Promisification</span>
+            <span class="mono text-[10px] px-1.5 py-0.5 bg-[#121212]/10 rounded">SIM</span>
+          </button>
+          <button onclick="switchModule('async-await-gist')" id="btn-async-await-gist" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>7. Async/Await & Gist Code Fixes</span>
+            <span class="mono text-[10px] opacity-70">07</span>
+          </button>
+          <button onclick="switchModule('multithreading-glossary')" id="btn-multithreading-glossary" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>8. Multithreading (JS/Py/Rust) & Glossary</span>
+            <span class="mono text-[10px] opacity-70">08</span>
+          </button>
+          <button onclick="switchModule('wispr-practice')" id="btn-wispr-practice" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>9. Wispr Summaries & Checkpoints</span>
+            <span class="mono text-[10px] px-1.5 py-0.5 bg-[#121212]/10 rounded">QUIZ</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Progress Footer -->
+    <div class="p-4 border-t-2 border-[#121212] bg-[#E6E1D5]">
+      <div class="flex items-center justify-between text-xs mono mb-1.5">
+        <span class="font-semibold">MASTERY CHECKLIST</span>
+        <span id="mastery-score" class="font-bold">0 / 11</span>
+      </div>
+      <div class="w-full h-2 bg-[#F6F3EB] border border-[#121212] rounded-full overflow-hidden">
+        <div id="mastery-bar" class="h-full bg-[#121212] w-0 transition-all duration-300"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT WORKSPACE -->
+  <main class="flex-1 overflow-y-auto px-5 py-8 lg:px-14 lg:py-12">
+    <div id="content-mount" class="max-w-4xl mx-auto"></div>
+  </main>
+
+  <script>
+    // Global State for Checkpoints & Interactive Widgets
+    const appState = {
+      currentModule: 'js-properties',
+      quizAnswered: {},
+      checklistItems: {
+        c1: false, c2: false, c3: false, c4: false, c5: false, c6: false
+      },
+      promiseState: 'pending',
+      promiseValue: 'Waiting for order...',
+      fileRaceStep: 0,
+      eventLoopMode: 'timeout',
+      eventLoopStep: 0
+    };
+
+    function updateMasteryUI() {
+      const quizCount = Object.values(appState.quizAnswered).filter(Boolean).length;
+      const checkCount = Object.values(appState.checklistItems).filter(Boolean).length;
+      const total = quizCount + checkCount;
+      document.getElementById('mastery-score').innerText = `${total} / 11`;
+      document.getElementById('mastery-bar').style.width = `${Math.min(100, (total / 11) * 100)}%`;
+    }
+
+    function toggleMobileMenu() {
+      const sb = document.getElementById('sidebar');
+      sb.classList.toggle('-translate-x-full');
+    }
+
+    function filterNavigation(query) {
+      const q = query.toLowerCase().trim();
+      const buttons = document.querySelectorAll('.nav-btn');
+      buttons.forEach(btn => {
+        const text = btn.innerText.toLowerCase();
+        btn.style.display = text.includes(q) ? 'flex' : 'none';
+      });
+    }
+
+    const moduleTemplates = {
+      'js-properties': () => `
+        <div class="space-y-8 animate-pop">
+          <!-- Header -->
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex flex-wrap items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">FILE 1 & 3</span>
+              <span>Properties of JS.md</span>
+              <span>•</span>
+              <span>Class 1 - Async, Callbacks.md (§1)</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl text-[#121212]">Properties of JavaScript & Runtimes</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2 leading-relaxed">
+              Every programming language comes with its unique set of architectural trade-offs. JavaScript is an <strong>interpreted, dynamically typed, single-threaded, garbage-collected</strong> language whose capabilities depend on the <strong>runtime environment</strong> executing it.
+            </p>
+          </div>
+
+          <!-- 4 Pillars Grid -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="editorial-card p-6 rounded-xl">
+              <div class="flex items-center justify-between mb-2">
+                <span class="mono text-xs font-bold uppercase px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">Property 01</span>
+                <span class="mono text-xs text-[#52504C]">Execution Model</span>
+              </div>
+              <h3 class="serif-title text-2xl mt-1">1. Interpreted (JIT)</h3>
+              <p class="text-xs lg:text-sm text-[#52504C] mt-2 leading-relaxed">
+                JavaScript is executed line-by-line at runtime by the JS engine in the browser or server environment, rather than being compiled into ahead-of-time machine code beforehand.
+              </p>
+              <div class="mt-4 pt-3 border-t border-[#121212]/20 grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <strong class="block mono text-[#121212]">✓ Upside:</strong>
+                  <span class="text-[#52504C]">One less step before running your code.</span>
+                </div>
+                <div>
+                  <strong class="block mono text-[#121212]">✗ Downsides:</strong>
+                  <span class="text-[#52504C]">Performance overhead & more prone to runtime errors.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="editorial-card p-6 rounded-xl">
+              <div class="flex items-center justify-between mb-2">
+                <span class="mono text-xs font-bold uppercase px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">Property 02</span>
+                <span class="mono text-xs text-[#52504C]">Type System</span>
+              </div>
+              <h3 class="serif-title text-2xl mt-1">2. Dynamically Typed</h3>
+              <p class="text-xs lg:text-sm text-[#52504C] mt-2 leading-relaxed">
+                Variables in JavaScript are not bound to a specific data type. Types are determined at runtime and can change as the program executes.
+              </p>
+              <div class="mt-3 grid grid-cols-2 gap-2 text-[11px] mono">
+                <div class="bg-[#F6F3EB] p-2.5 rounded border border-[#121212]">
+                  <div class="font-bold mb-1">// C++ (Won't Compile)</div>
+                  <code>int a = 1;<br>a = "hello"; // Error!</code>
+                </div>
+                <div class="bg-[#121212] text-[#F6F3EB] p-2.5 rounded">
+                  <div class="font-bold text-[#E6E1D5] mb-1">// JS (Will Compile)</div>
+                  <code>var a = 1;<br>a = "harkirat";<br>a = true;</code>
+                </div>
+              </div>
+            </div>
+
+            <div class="editorial-card p-6 rounded-xl">
+              <div class="flex items-center justify-between mb-2">
+                <span class="mono text-xs font-bold uppercase px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">Property 03</span>
+                <span class="mono text-xs text-[#52504C]">CPU Core Usage</span>
+              </div>
+              <h3 class="serif-title text-2xl mt-1">3. Single-Threaded</h3>
+              <p class="text-xs lg:text-sm text-[#52504C] mt-2 leading-relaxed">
+                Ordinary JavaScript executes in a single-threaded environment—processing one task at a time on a single Call Stack. A CPU-heavy Node process uses only one core (100%) even on a 12-core machine unless explicit Worker Threads are spawned.
+              </p>
+            </div>
+
+            <div class="editorial-card p-6 rounded-xl">
+              <div class="flex items-center justify-between mb-2">
+                <span class="mono text-xs font-bold uppercase px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">Property 04</span>
+                <span class="mono text-xs text-[#52504C]">Memory Management</span>
+              </div>
+              <h3 class="serif-title text-2xl mt-1">4. Garbage Collected</h3>
+              <p class="text-xs lg:text-sm text-[#52504C] mt-2 leading-relaxed">
+                JavaScript automatically manages memory allocation and deallocation through a Garbage Collector, reclaiming heap memory occupied by objects that are no longer reachable.
+              </p>
+            </div>
+          </div>
+
+          <!-- Interactive Runtime Inspector -->
+          <div class="editorial-card p-6 rounded-xl space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#121212]/20 pb-4">
+              <div>
+                <span class="text-xs mono uppercase font-bold">§1.1 & §1.2 Interactive Comparison</span>
+                <h3 class="serif-title text-2xl">Frontend vs. Backend Runtime & Engine Matrix</h3>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="showRuntimeTab('frontend')" id="rt-frontend" class="editorial-btn px-3 py-1.5 rounded text-xs mono nav-active">Browser (Frontend)</button>
+                <button onclick="showRuntimeTab('backend')" id="rt-backend" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded text-xs mono">Node.js / Bun (Backend)</button>
+                <button onclick="showRuntimeTab('engines')" id="rt-engines" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded text-xs mono">Engine vs Runtime</button>
+              </div>
+            </div>
+
+            <div id="runtime-display" class="text-sm space-y-3">
+              <!-- Populated by showRuntimeTab -->
+            </div>
+          </div>
+
+          <!-- Conclusion Callout -->
+          <div class="editorial-card-sm p-5 rounded-xl bg-[#E6E1D5]">
+            <h4 class="font-bold text-sm mono uppercase">📌 Lecture Conclusion: Is JS a good language?</h4>
+            <p class="text-xs lg:text-sm text-[#121212] mt-1 leading-relaxed">
+              <strong>Yes and no.</strong> It is beginner-friendly and excels at I/O-heavy coordination, but has performance overhead compared to systems languages. Runtimes like <strong>Bun</strong> optimize startup and I/O speed, though raw CPU-bound throughput still belongs to C++, Rust, or Go.
+            </p>
+          </div>
+        </div>
+      `,
+
+      'complex-types': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">FILE 4</span>
+              <span>Complex types.md</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">Complex Types: Objects, Arrays & Nested Structures</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2">
+              Master JavaScript's non-primitive reference types—<code>Objects</code>, <code>Arrays</code>, <code>Array of Objects</code>, and <code>Object of Objects</code>—and test all 5 cohort assignments interactively below.
+            </p>
+          </div>
+
+          <!-- Reference Cards -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="editorial-card p-5 rounded-xl space-y-3">
+              <h3 class="serif-title text-2xl">1. Objects & Nested Objects</h3>
+              <p class="text-xs text-[#52504C]">An object is a collection of <code>key-value pairs</code>, where each key is a string and each value can be any valid JS type (including another object).</p>
+              <pre class="bg-[#121212] text-[#F6F3EB] p-3.5 rounded-lg text-xs overflow-x-auto">const user1 = {
+  name: "harkirat",
+  age: 19,
+  address: {
+    city: "Delhi",
+    country: "India",
+    address: "1122 DLF"
+  }
+};
+const city = user1.address.city; // "Delhi"</pre>
+            </div>
+
+            <div class="editorial-card p-5 rounded-xl space-y-3">
+              <h3 class="serif-title text-2xl">2. Arrays & Array of Objects</h3>
+              <p class="text-xs text-[#52504C]">Arrays group ordered data together. Combining arrays with objects models database rows and JSON payloads.</p>
+              <pre class="bg-[#121212] text-[#F6F3EB] p-3.5 rounded-lg text-xs overflow-x-auto">const users = [
+  { name: "Harkirat", age: 21, gender: "male" },
+  { name: "raman", age: 22, gender: "male" },
+  { name: "priya", age: 17, gender: "female" }
+];
+const user1Age = users[0].age; // 21</pre>
+            </div>
+          </div>
+
+          <!-- Interactive Assignment Workbench -->
+          <div class="editorial-card p-6 rounded-xl space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#121212]/20 pb-4">
+              <div>
+                <span class="text-xs mono font-bold uppercase">Interactive Assignment Runner</span>
+                <h3 class="serif-title text-2xl">Run All 5 Cohort Assignments</h3>
+              </div>
+              <span class="text-xs mono px-2.5 py-1 bg-[#121212] text-[#F6F3EB] rounded">Click any assignment to execute</span>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+              <button onclick="runComplexAssignment(1)" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded text-xs mono font-medium">#1: Greet User (Name & Age)</button>
+              <button onclick="runComplexAssignment(2)" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded text-xs mono font-medium">#2: Gender Title + Legal Vote (#3)</button>
+              <button onclick="runComplexAssignment(3)" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded text-xs mono font-medium">#4: Filter Even Numbers</button>
+              <button onclick="runComplexAssignment(4)" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded text-xs mono font-medium">#5: Filter Users &gt; 18</button>
+              <button onclick="runComplexAssignment(5)" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded text-xs mono font-medium">#6: Users &gt; 18 &amp;&amp; Male</button>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <div class="text-xs mono font-bold mb-1">SOLUTION IMPLEMENTATION:</div>
+                <pre id="assignment-code" class="bg-[#121212] text-[#F6F3EB] p-4 rounded-lg text-xs overflow-x-auto min-h-[160px]"></pre>
+              </div>
+              <div>
+                <div class="text-xs mono font-bold mb-1">LIVE EXECUTION OUTPUT:</div>
+                <div id="assignment-output" class="bg-[#F6F3EB] border-2 border-[#121212] p-4 rounded-lg text-xs mono min-h-[160px] whitespace-pre-wrap"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `,
+
+      'sync-cpu-io': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">FILES 6 & 7</span>
+              <span>Synchronous code.md</span>
+              <span>•</span>
+              <span>I O bound tasks vs CPU bound tasks.md</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">Synchronous Execution & CPU vs. I/O Bound Tasks</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2">
+              Synchronous code executes line-by-line in the exact order it is written. Understanding whether a slow operation is <strong>CPU-bound</strong> or <strong>I/O-bound</strong> determines whether asynchronous programming will help.
+            </p>
+          </div>
+
+          <!-- Synchronous Code Block -->
+          <div class="editorial-card p-6 rounded-xl space-y-4">
+            <h3 class="serif-title text-2xl">1. Synchronous Code Execution Trace</h3>
+            <p class="text-xs lg:text-sm text-[#52504C]">
+              Each operation waits for the previous one to complete before moving to the next line.
+            </p>
+            <div class="grid md:grid-cols-2 gap-4 items-center">
+              <pre class="bg-[#121212] text-[#F6F3EB] p-4 rounded-lg text-xs overflow-x-auto">function sum(n) {
+  let ans = 0;
+  for (let i = 1; i <= n; i++) {
+    ans = ans + i;
+  }
+  return ans;
+}
+
+const ans1 = sum(100);
+console.log(ans1); // 5050
+const ans2 = sum(1000);
+console.log(ans2); // 500500
+const ans3 = sum(10000);
+console.log(ans3); // 50005000</pre>
+              <div class="bg-[#F6F3EB] border border-[#121212] p-4 rounded-lg space-y-2 text-xs">
+                <div class="font-bold mono uppercase">Why this matters in Node.js:</div>
+                <p class="text-[#52504C]">If you use <code>fs.readFileSync("a.txt", "utf-8")</code> inside an Express HTTP server handling 100 requests, the single JS thread blocks on disk I/O for Request #1 while Requests #2–#100 wait idle in line.</p>
+                <div class="p-2.5 bg-[#EFECE3] border border-[#121212] rounded mono text-[11px]">
+                  Key Distinction: Async does NOT make reading a file faster; it prevents the JS thread from blocking while waiting!
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CPU vs I/O Comparison -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="editorial-card p-6 rounded-xl space-y-3">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] text-xs mono rounded">Bottleneck: Processor</span>
+              <h3 class="serif-title text-3xl">CPU-Bound Tasks</h3>
+              <p class="text-xs lg:text-sm text-[#52504C]">
+                Operations limited by the speed and power of the CPU. They spend their time performing active computation on the thread.
+              </p>
+              <pre class="bg-[#121212] text-[#F6F3EB] p-3 rounded-lg text-xs">let ans = 0;
+for (let i = 1; i <= 1_000_000_000; i++) {
+  ans = ans + i;
+}
+console.log(ans);</pre>
+              <div class="p-3 bg-[#F6F3EB] border border-[#121212] rounded-lg text-xs">
+                <strong>💡 Harkirat's Real-World Analogy:</strong> <em>Running for 3 miles.</em> Your legs and brain must be constantly engaged for the entire 3 miles while you run. You cannot switch to another task mid-stride.
+              </div>
+            </div>
+
+            <div class="editorial-card p-6 rounded-xl space-y-3">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] text-xs mono rounded">Bottleneck: External System</span>
+              <h3 class="serif-title text-3xl">I/O-Bound Tasks</h3>
+              <p class="text-xs lg:text-sm text-[#52504C]">
+                Operations limited by input/output capabilities (disk reads, HTTP calls, database queries, AI API calls, timers).
+              </p>
+              <pre class="bg-[#121212] text-[#F6F3EB] p-3 rounded-lg text-xs">const fs = require("fs");
+fs.readFile("a.txt", "utf-8", (err, data) => {
+  console.log(data);
+});</pre>
+              <div class="p-3 bg-[#F6F3EB] border border-[#121212] rounded-lg text-xs">
+                <strong>💡 Harkirat's Real-World Analogy:</strong> <em>Boiling water on a kettle.</em> You put the water on the kettle, and your brain is free to do other work until the kettle whistles.
+              </div>
+            </div>
+          </div>
+        </div>
+      `,
+
+      'event-loop-arch': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">FILES 1, 2 & 8</span>
+              <span>JS Architecture for async code.md</span>
+              <span>•</span>
+              <span>Loupe Mental Model</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">JavaScript Async Architecture & Event Loop</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2">
+              Inspired by Philip Roberts' <em>Loupe</em> visualizer referenced in your notes: trace how the <strong>Call Stack (LIFO)</strong>, <strong>Host/Web APIs</strong>, <strong>Microtask Queue</strong>, <strong>Callback Queue</strong>, and <strong>Event Loop</strong> coordinate execution.
+            </p>
+          </div>
+
+          <!-- Interactive Event Loop Simulator -->
+          <div class="editorial-card p-6 rounded-xl space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#121212]/20 pb-4">
+              <div>
+                <span class="text-xs mono uppercase font-bold">Interactive Runtime Stepper</span>
+                <h3 class="serif-title text-2xl">Trace the Call Stack, Web APIs & Queues</h3>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <select id="el-scenario" onchange="changeEventLoopScenario(this.value)" class="bg-[#F6F3EB] border border-[#121212] rounded px-2.5 py-1.5 text-xs mono font-semibold">
+                  <option value="timeout">Scenario 1: setTimeout(0) Order (A, C, B)</option>
+                  <option value="blocked">Scenario 2: 3s Busy Loop Blocking 100ms Timer</option>
+                  <option value="microtask">Scenario 3: Promise vs setTimeout(0) (1, 4, 3, 2)</option>
+                </select>
+                <button onclick="stepEventLoopSim()" class="editorial-btn bg-[#121212] text-[#F6F3EB] px-3.5 py-1.5 rounded text-xs mono font-semibold">▶ Next Step</button>
+                <button onclick="resetEventLoopSim()" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded text-xs mono">↺ Reset</button>
+              </div>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-4">
+              <!-- Code View -->
+              <div class="lg:col-span-5">
+                <div class="text-xs mono font-bold mb-1">PROGRAM SOURCE:</div>
+                <pre id="el-code-box" class="bg-[#121212] text-[#F6F3EB] p-4 rounded-lg text-xs overflow-x-auto leading-relaxed min-h-[210px]"></pre>
+              </div>
+
+              <!-- Architecture Boxes -->
+              <div class="lg:col-span-7 flex flex-col justify-between space-y-3">
+                <div id="el-narration" class="p-3 bg-[#F6F3EB] border-2 border-[#121212] rounded-lg text-xs font-medium">
+                  Press <strong>"▶ Next Step"</strong> to trace execution line by line.
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs mono">
+                  <div class="bg-[#F6F3EB] border border-[#121212] p-2.5 rounded-lg min-h-[115px]">
+                    <div class="text-[10px] font-bold uppercase border-b border-[#121212]/20 pb-1 mb-2">1. Call Stack (LIFO)</div>
+                    <div id="el-stack" class="space-y-1 text-[11px]"></div>
+                  </div>
+                  <div class="bg-[#F6F3EB] border border-[#121212] p-2.5 rounded-lg min-h-[115px]">
+                    <div class="text-[10px] font-bold uppercase border-b border-[#121212]/20 pb-1 mb-2">2. Host / Web APIs</div>
+                    <div id="el-apis" class="space-y-1 text-[11px]"></div>
+                  </div>
+                  <div class="bg-[#F6F3EB] border border-[#121212] p-2.5 rounded-lg min-h-[115px]">
+                    <div class="text-[10px] font-bold uppercase border-b border-[#121212]/20 pb-1 mb-2">3. Microtasks (VIP)</div>
+                    <div id="el-micro" class="space-y-1 text-[11px]"></div>
+                  </div>
+                  <div class="bg-[#F6F3EB] border border-[#121212] p-2.5 rounded-lg min-h-[115px]">
+                    <div class="text-[10px] font-bold uppercase border-b border-[#121212]/20 pb-1 mb-2">4. Callback Queue</div>
+                    <div id="el-macro" class="space-y-1 text-[11px]"></div>
+                  </div>
+                </div>
+
+                <div class="bg-[#121212] text-[#F6F3EB] px-3.5 py-2.5 rounded-lg text-xs mono flex items-center justify-between">
+                  <span>CONSOLE OUTPUT:</span>
+                  <span id="el-console" class="font-bold tracking-wider">[]</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 Architectural Pillars Explanation -->
+          <div class="grid md:grid-cols-2 gap-4 text-xs lg:text-sm">
+            <div class="editorial-card-sm p-4 rounded-xl">
+              <strong class="mono block text-[#121212]">1. Call Stack (LIFO)</strong>
+              <span class="text-[#52504C]">Tracks active function calls like a stack of plates: the last function pushed on top is the first one popped off when it returns.</span>
+            </div>
+            <div class="editorial-card-sm p-4 rounded-xl">
+              <strong class="mono block text-[#121212]">2. Host APIs & Background Work</strong>
+              <span class="text-[#52504C]">Timers, OS networking, and <code>libuv</code> thread pools manage asynchronous work outside the main JS thread.</span>
+            </div>
+            <div class="editorial-card-sm p-4 rounded-xl">
+              <strong class="mono block text-[#121212]">3. Microtask vs Callback Queue</strong>
+              <span class="text-[#52504C]">Promise reactions (<code>.then/.catch</code>) enter the Microtask Queue, which always drains before timer/I/O callbacks in the Callback Queue.</span>
+            </div>
+            <div class="editorial-card-sm p-4 rounded-xl">
+              <strong class="mono block text-[#121212]">4. The Golden Rule of setTimeout(fn, 1000)</strong>
+              <span class="text-[#52504C]">1000ms is a <strong>minimum threshold</strong>, never a guaranteed execution time. A callback cannot preempt a busy Call Stack.</span>
+            </div>
+          </div>
+        </div>
+      `,
+
+      'callbacks-deep': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">FILES 1 & 5</span>
+              <span>Class 1 - Async, Callbacks.md (§6–§9)</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">Callbacks, Error-First Convention & Synchronization</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2">
+              A callback is a function passed to another function to be invoked when its contract is satisfied. The hardest challenge with callbacks is coordinating multiple concurrent asynchronous operations.
+            </p>
+          </div>
+
+          <!-- Error-First & Callback Hell -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="editorial-card p-5 rounded-xl space-y-3">
+              <h3 class="serif-title text-2xl">Error-First Callbacks & Sequential Contract</h3>
+              <p class="text-xs text-[#52504C]">Node.js convention: <code>callback(err, data)</code>. Always check <code>if (err)</code> first and propagate failure to the caller before processing data.</p>
+              <pre class="bg-[#121212] text-[#F6F3EB] p-3.5 rounded-lg text-xs overflow-x-auto">function readFromAWriteToB(inputFile, outputFile, cb) {
+  fs.readFile(inputFile, "utf8", (err, data) => {
+    if (err) return cb(err);
+    fs.writeFile(outputFile, data.toUpperCase(), "utf8", (err) => {
+      if (err) return cb(err);
+      cb(null); // Only invoke after write finishes!
+    });
+  });
+}</pre>
+            </div>
+
+            <div class="editorial-card p-5 rounded-xl space-y-3">
+              <h3 class="serif-title text-2xl">Why <code>forEach()</code> Fails to Wait</h3>
+              <p class="text-xs text-[#52504C]">Iterating over an array with <code>forEach()</code> is synchronous, but the <code>fs.writeFile()</code> operations inside it complete asynchronously in unpredictable order!</p>
+              <pre class="bg-[#121212] text-[#F6F3EB] p-3.5 rounded-lg text-xs overflow-x-auto">// ❌ BUG: Logs "All files written" immediately!
+parsedData.forEach((file) => {
+  fs.writeFile(file.path, file.content, (err) => {
+    if (err) console.error(err);
+  });
+});
+console.log("All files written"); // Premature!</pre>
+            </div>
+          </div>
+
+          <!-- Interactive 3-File Completion Counter Simulator -->
+          <div class="editorial-card p-6 rounded-xl space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#121212]/20 pb-4">
+              <div>
+                <span class="text-xs mono font-bold uppercase">§9.4 Lecture Exercise Simulator</span>
+                <h3 class="serif-title text-2xl">Concurrent Multi-File Write Synchronization (<code>createCode</code>)</h3>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="simulateConcurrentWrites()" class="editorial-btn bg-[#121212] text-[#F6F3EB] px-3.5 py-1.5 rounded text-xs mono font-semibold">⚡ Launch 3 Concurrent File Writes</button>
+                <button onclick="resetConcurrentWrites()" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded text-xs mono">↺ Reset</button>
+              </div>
+            </div>
+
+            <p class="text-xs text-[#52504C]">
+              Notice how <strong>File B</strong> and <strong>File C</strong> can finish before <strong>File A</strong>! Because start order does not guarantee completion order, we track <code>completed++</code> and invoke <code>cb(null)</code> only when <code>completed === total (3 / 3)</code>.
+            </p>
+
+            <div class="grid md:grid-cols-3 gap-4 text-xs mono">
+              <div id="file-box-1" class="p-4 bg-[#F6F3EB] border border-[#121212] rounded-lg space-y-1">
+                <div class="font-bold">1. code/index.js</div>
+                <div class="text-[#52504C]" id="file-status-1">Idle</div>
+              </div>
+              <div id="file-box-2" class="p-4 bg-[#F6F3EB] border border-[#121212] rounded-lg space-y-1">
+                <div class="font-bold">2. code/package.json</div>
+                <div class="text-[#52504C]" id="file-status-2">Idle</div>
+              </div>
+              <div id="file-box-3" class="p-4 bg-[#F6F3EB] border border-[#121212] rounded-lg space-y-1">
+                <div class="font-bold">3. code/readme.txt</div>
+                <div class="text-[#52504C]" id="file-status-3">Idle</div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between bg-[#121212] text-[#F6F3EB] p-4 rounded-lg text-xs mono">
+              <span id="counter-readout">COUNTER STATE: completed = 0 / 3</span>
+              <span id="counter-cb-status" class="px-2 py-0.5 bg-[#F6F3EB]/20 rounded">Final cb() waiting...</span>
+            </div>
+          </div>
+        </div>
+      `,
+
+      'promises-chaining': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">FILE 2</span>
+              <span>Class 2 - Promises, async-await, multithreading.md (§2–§7)</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">Promises, State Machine & Promisification</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2">
+              A Promise is a JavaScript object representing the eventual completion or failure of an asynchronous operation. Once settled (<code>fulfilled</code> or <code>rejected</code>), its state can never transition again.
+            </p>
+          </div>
+
+          <!-- Interactive Food-Court Buzzer State Machine -->
+          <div class="editorial-card p-6 rounded-xl space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#121212]/20 pb-4">
+              <div>
+                <span class="text-xs mono uppercase font-bold">§2.3 & §3 Interactive Analogy</span>
+                <h3 class="serif-title text-2xl">The Food-Court Buzzer: Promise State Machine</h3>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="setPromiseSim('pending')" class="editorial-btn bg-[#F6F3EB] px-3 py-1 rounded text-xs mono">1. Order (Pending)</button>
+                <button onclick="setPromiseSim('fulfilled')" class="editorial-btn bg-[#121212] text-[#F6F3EB] px-3 py-1 rounded text-xs mono">2. resolve("Food Ready")</button>
+                <button onclick="setPromiseSim('rejected')" class="editorial-btn bg-[#F6F3EB] px-3 py-1 rounded text-xs mono">3. reject(new Error("Closed"))</button>
+              </div>
+            </div>
+
+            <div id="promise-buzzer-box" class="p-5 bg-[#F6F3EB] border-2 border-[#121212] rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <div class="text-xs mono uppercase text-[#52504C]">Promise Instance Status</div>
+                <div id="promise-state-badge" class="serif-title text-3xl mt-0.5">State: PENDING ⏳</div>
+                <p id="promise-state-desc" class="text-xs text-[#52504C] mt-1">You ordered food and received a buzzer. The operation is in progress.</p>
+              </div>
+              <div class="bg-[#121212] text-[#F6F3EB] p-3.5 rounded-lg text-xs mono shrink-0">
+                <div id="promise-handler-triggered">Active Handler: None yet (Waiting...)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Promisification & Chaining -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="editorial-card p-5 rounded-xl space-y-3">
+              <h3 class="serif-title text-2xl">Writing <code>readFilePromisified</code></h3>
+              <p class="text-xs text-[#52504C]">How to wrap a legacy callback API inside <code>new Promise((resolve, reject) => ...)</code>:</p>
+              <pre class="bg-[#121212] text-[#F6F3EB] p-3.5 rounded-lg text-xs overflow-x-auto">const fs = require("node:fs");
+
+function readFilePromisified(path, encoding) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(path, encoding, (err, data) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(data);
+    });
+  });
+}</pre>
+            </div>
+
+            <div class="editorial-card p-5 rounded-xl space-y-3">
+              <h3 class="serif-title text-2xl">The Golden Rule of <code>.then()</code> Chaining</h3>
+              <p class="text-xs text-[#52504C]">You <strong>must return</strong> the Promise inside <code>.then()</code> if the next step depends on its completion!</p>
+              <pre class="bg-[#121212] text-[#F6F3EB] p-3.5 rounded-lg text-xs overflow-x-auto">const fs = require("node:fs/promises");
+
+fs.readFile("a.txt", "utf8")
+  .then((data) => {
+    // MUST return the writeFile Promise!
+    return fs.writeFile("b.txt", data.toUpperCase());
+  })
+  .then(() => fs.readFile("b.txt", "utf8"))
+  .then((result) => console.log(result))
+  .catch((err) => console.error("Failed:", err.message))
+  .finally(() => console.log("Operation finished"));</pre>
+            </div>
+          </div>
+        </div>
+      `,
+
+      'async-await-gist': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">FILE 2 (§9–§11)</span>
+              <span>Async/Await, Error Handling & GitHub Gist Bug Fixes</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">Async/Await & Your GitHub Gist Code Audit</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2">
+              <code>async/await</code> is syntactic sugar over Promises. An <code>async</code> function always returns a Promise, and <code>await</code> suspends only that function's continuation—never blocking the main JavaScript thread.
+            </p>
+          </div>
+
+          <!-- Interactive Gist Bug Diff Viewer -->
+          <div class="editorial-card p-6 rounded-xl space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#121212]/20 pb-4">
+              <div>
+                <span class="text-xs mono uppercase font-bold">§11 Interactive Code Audit</span>
+                <h3 class="serif-title text-2xl">Fixing the 3 Bugs from Your Lecture GitHub Gist</h3>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button onclick="showGistFix(1)" id="gist-btn-1" class="editorial-btn px-3 py-1 rounded text-xs mono nav-active">Fix 1: setTimeoutPromisified</button>
+                <button onclick="showGistFix(2)" id="gist-btn-2" class="editorial-btn bg-[#F6F3EB] px-3 py-1 rounded text-xs mono">Fix 2: readTimer(n, m)</button>
+                <button onclick="showGistFix(3)" id="gist-btn-3" class="editorial-btn bg-[#F6F3EB] px-3 py-1 rounded text-xs mono">Fix 3: createCode + Promise.all</button>
+              </div>
+            </div>
+
+            <div id="gist-diff-container" class="grid md:grid-cols-2 gap-4 text-xs">
+              <!-- Populated by showGistFix -->
+            </div>
+          </div>
+
+          <!-- Try/Catch Pitfalls -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="editorial-card p-5 rounded-xl space-y-2">
+              <span class="text-xs mono font-bold uppercase px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">Pitfall 01</span>
+              <h4 class="serif-title text-2xl">Forgetting <code>await</code> inside <code>try / catch</code></h4>
+              <p class="text-xs text-[#52504C]">
+                If you call <code>fs.readFile("missing.txt")</code> inside a <code>try</code> block <strong>without</strong> <code>await</code>, <code>try/catch</code> will NOT catch the rejection because the Promise settles later!
+              </p>
+              <pre class="bg-[#121212] text-[#F6F3EB] p-3 rounded text-xs overflow-x-auto">async function main() {
+  try {
+    // ✅ Must await so rejection throws inside try
+    const data = await fs.readFile("missing.txt", "utf8");
+  } catch (err) {
+    console.error("Caught:", err.message);
+  }
+}</pre>
+            </div>
+
+            <div class="editorial-card p-5 rounded-xl space-y-2">
+              <span class="text-xs mono font-bold uppercase px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">Pitfall 02</span>
+              <h4 class="serif-title text-2xl">CPU Loops Inside <code>async</code> Functions</h4>
+              <p class="text-xs text-[#52504C]">
+                Putting a 1-billion iteration loop inside an <code>async function</code> does <strong>not</strong> make it non-blocking! It still runs synchronously on the main thread until it hits an <code>await</code>.
+              </p>
+              <pre class="bg-[#121212] text-[#F6F3EB] p-3 rounded text-xs overflow-x-auto">async function main() {
+  console.log("A");
+  const res = await Promise.resolve("B");
+  console.log(res);
+  console.log("C");
+}
+main();
+console.log("D"); // Output order: A -> D -> B -> C</pre>
+            </div>
+          </div>
+        </div>
+      `,
+
+      'multithreading-glossary': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">FILE 2 (§12–§16)</span>
+              <span>Processes, Threads, GIL, Rust Tokio & Technical Glossary</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">Concurrency vs. Parallelism: JS, Python, Rust & Go</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2">
+              <strong>Concurrency</strong> is multiple tasks making progress over overlapping periods (one chef switching between pots). <strong>Parallelism</strong> is multiple tasks executing at the exact same instant on multiple CPU cores.
+            </p>
+          </div>
+
+          <!-- Language Comparison Table -->
+          <div class="editorial-card overflow-hidden rounded-xl">
+            <div class="p-4 bg-[#121212] text-[#F6F3EB] flex justify-between items-center">
+              <span class="mono text-xs font-bold uppercase">Cross-Language Runtime & Memory Architecture</span>
+              <span class="mono text-xs text-[#E6E1D5]">Lecture 2 §12–§14</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="border-b-2 border-[#121212] bg-[#E6E1D5] mono">
+                    <th class="p-3.5">Language</th>
+                    <th class="p-3.5">Threading & Parallelism</th>
+                    <th class="p-3.5">Async Runtime</th>
+                    <th class="p-3.5">Memory Management</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[#121212]/20">
+                  <tr>
+                    <td class="p-3.5 font-bold mono">JavaScript (Node/Browser)</td>
+                    <td class="p-3.5">Single-threaded main context. True parallelism requires explicit <code>node:worker_threads</code> or Web Workers.</td>
+                    <td class="p-3.5">Built-in Event Loop + <code>libuv</code> / Browser APIs.</td>
+                    <td class="p-3.5">Automatic Tracing Garbage Collection.</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3.5 font-bold mono">Python (CPython)</td>
+                    <td class="p-3.5">Threads share memory, but the <strong>GIL (Global Interpreter Lock)</strong> limits simultaneous bytecode execution in standard builds. Use <code>multiprocessing</code> for CPU parallelism.</td>
+                    <td class="p-3.5"><code>asyncio</code> event loop.</td>
+                    <td class="p-3.5">Reference Counting + Cyclic Garbage Collector.</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3.5 font-bold mono">Rust</td>
+                    <td class="p-3.5">True multi-core parallelism with shared memory. Compiler-checked <strong>Ownership & Borrowing</strong> prevents data races at compile time.</td>
+                    <td class="p-3.5">No built-in async executor; uses external runtimes like <strong>Tokio</strong> or <strong>Mio</strong> to poll Futures.</td>
+                    <td class="p-3.5">Compile-time Ownership & Borrowing (No GC).</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3.5 font-bold mono">Go (Golang)</td>
+                    <td class="p-3.5">True parallelism; runtime scheduler multiplexes lightweight <strong>Goroutines</strong> onto OS threads.</td>
+                    <td class="p-3.5">Built into the Go runtime scheduler.</td>
+                    <td class="p-3.5">Concurrent, low-latency Garbage Collector.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Searchable Glossary from Lecture 2 §15 -->
+          <div class="editorial-card p-6 rounded-xl space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span class="text-xs mono font-bold uppercase">§15 Complete Technical Jargon Reference</span>
+                <h3 class="serif-title text-2xl">Interactive Lecture Glossary</h3>
+              </div>
+              <input 
+                type="text" 
+                oninput="filterGlossary(this.value)" 
+                placeholder="Search term (e.g. Microtask, GIL, Future, CRUD)..." 
+                class="bg-[#F6F3EB] border border-[#121212] rounded px-3 py-1.5 text-xs mono w-full sm:w-72"
+              />
+            </div>
+            <div id="glossary-grid" class="grid sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
+              <!-- Populated by renderGlossary() -->
+            </div>
+          </div>
+        </div>
+      `,
+
+      'wispr-practice': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">WISPR SUMMARIES & QUIZZES</span>
+              <span>1 min read - wispr.md</span>
+              <span>•</span>
+              <span>3 min read - wispr.md</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">Wispr Lecture Digests, Checkpoints & Practice</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2">
+              Review your rapid Wispr lecture digests, complete the 5-question Lecture 1 Checkpoint, and check off your 6-item Lecture 2 Practice Sequence before Thursday's Express & Database class.
+            </p>
+          </div>
+
+          <!-- Wispr 1-min and 3-min Digests -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="editorial-card p-5 rounded-xl space-y-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] text-[11px] mono rounded">1 MIN READ — WISPR (CLASS 1)</span>
+              <h3 class="serif-title text-2xl">Async & Callbacks Digest</h3>
+              <ul class="text-xs text-[#52504C] space-y-1.5 list-disc pl-4">
+                <li><strong>Runtimes:</strong> <code>console.log</code> & <code>fetch</code> exist in both Browser and Node.js; <code>document/window</code> are Browser-only; <code>fs/http</code> are Backend-only.</li>
+                <li><strong>Waiter Analogy:</strong> Blocking waiter = <code>readFileSync</code>; good waiter hands order to kitchen and serves other tables.</li>
+                <li><strong>Git-Patch Multi-File Exercise:</strong> Write order is not guaranteed. Use a completion counter and invoke <code>cb</code> only when <code>completed === files.length</code>.</li>
+              </ul>
+            </div>
+
+            <div class="editorial-card p-5 rounded-xl space-y-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] text-[11px] mono rounded">3 MIN READ — WISPR (CLASS 2)</span>
+              <h3 class="serif-title text-2xl">Promises & Multithreading Digest</h3>
+              <ul class="text-xs text-[#52504C] space-y-1.5 list-disc pl-4">
+                <li><strong>Promises:</strong> Food-court buzzer analogy (<code>pending</code>, <code>fulfilled</code>, <code>rejected</code>). Chaining flattens callback hell.</li>
+                <li><strong>Priority:</strong> <code>Promise.resolve</code> uses the VIP Microtask queue vs <code>setTimeout(..., 0)</code>, producing <code>1, 4, 3, 2</code>.</li>
+                <li><strong>Course Plan:</strong> Complete the ~20-question Promises assignment before Thursday's Express, Databases & CRUD class!</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Interactive 5-Question Checkpoint from Lecture 1 §13 -->
+          <div class="editorial-card p-6 rounded-xl space-y-5">
+            <h3 class="serif-title text-3xl border-b border-[#121212]/20 pb-2">Lecture 1 Checkpoint (5 Official Questions)</h3>
+            <div id="quiz-mount" class="space-y-4"></div>
+          </div>
+
+          <!-- Lecture 2 Practice Checklist (§17) -->
+          <div class="editorial-card p-6 rounded-xl space-y-4">
+            <h3 class="serif-title text-3xl border-b border-[#121212]/20 pb-2">Lecture 2 Practice Sequence Checklist (0 to 6)</h3>
+            <div class="grid sm:grid-cols-2 gap-3 text-xs">
+              ${[
+                ['c1', '1. Promise states: Write a Promise that fulfills after 1s, and another that rejects with an Error.'],
+                ['c2', '2. Promise chaining: Read a.txt, uppercase its contents, write b.txt, and log only after write completes.'],
+                ['c3', '3. Promisify a callback: Implement readFilePromisified(path, encoding) using fs.readFile and new Promise().'],
+                ['c4', '4. Async/await conversion: Rewrite the file workflow using async/await and try/catch.'],
+                ['c5', '5. Execution order: Predict output of synchronous logs, Promise.resolve().then(), and setTimeout(..., 0).'],
+                ['c6', '6. Create multiple files: Implement createCode() using Promise.all() with full error handling.']
+              ].map(([key, label]) => `
+                <label class="flex items-start gap-2.5 p-3 bg-[#F6F3EB] border border-[#121212] rounded-lg cursor-pointer hover:bg-[#E6E1D5] transition">
+                  <input type="checkbox" ${appState.checklistItems[key] ? 'checked' : ''} onchange="toggleChecklist('${key}', this.checked)" class="mt-0.5 accent-[#121212]" />
+                  <span class="font-medium leading-relaxed">${label}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `
+    };
+
+    function showRuntimeTab(tab) {
+      ['frontend', 'backend', 'engines'].forEach(t => {
+        const btn = document.getElementById(`rt-${t}`);
+        if (btn) btn.classList.toggle('nav-active', t === tab);
+      });
+      const box = document.getElementById('runtime-display');
+      if (!box) return;
+
+      if (tab === 'frontend') {
+        box.innerHTML = `
+          <div class="grid md:grid-cols-2 gap-4 pt-2">
+            <div class="bg-[#F6F3EB] border border-[#121212] p-4 rounded-lg space-y-2">
+              <div class="mono text-xs font-bold uppercase">Browser Environment APIs</div>
+              <ul class="text-xs text-[#52504C] space-y-1.5 list-disc pl-4">
+                <li><code>document</code> — access and manipulate the DOM tree.</li>
+                <li><code>window</code> — browser window and associated global APIs.</li>
+                <li><code>fetch()</code> — initiate network HTTP requests.</li>
+                <li><code>setTimeout()</code> — schedule timer callbacks.</li>
+              </ul>
+            </div>
+            <pre class="bg-[#121212] text-[#F6F3EB] p-4 rounded-lg text-xs overflow-x-auto">// Works in a browser:
+console.log("Hello");
+document.title = "My application";
+// ❌ Throws ReferenceError in Node.js because
+// Node does not provide a browser DOM!</pre>
+          </div>
+        `;
+      } else if (tab === 'backend') {
+        box.innerHTML = `
+          <div class="grid md:grid-cols-2 gap-4 pt-2">
+            <div class="bg-[#F6F3EB] border border-[#121212] p-4 rounded-lg space-y-2">
+              <div class="mono text-xs font-bold uppercase">Node.js / Bun / Deno APIs</div>
+              <ul class="text-xs text-[#52504C] space-y-1.5 list-disc pl-4">
+                <li><code>node:fs</code> & <code>node:fs/promises</code> — read and write OS files.</li>
+                <li><code>node:http</code> — create HTTP servers (used by Express).</li>
+                <li>Database clients — TCP/socket connections to Postgres/MongoDB.</li>
+                <li><code>console.log()</code>, <code>fetch()</code>, and timers work in BOTH!</li>
+              </ul>
+            </div>
+            <pre class="bg-[#121212] text-[#F6F3EB] p-4 rounded-lg text-xs overflow-x-auto">// Works in Node.js:
+const fs = require("node:fs");
+console.log("Hello from Backend");
+// ❌ Browsers block direct OS file-system access
+// for security sandboxing!</pre>
+          </div>
+        `;
+      } else {
+        box.innerHTML = `
+          <div class="grid sm:grid-cols-3 gap-3 pt-2 text-xs">
+            <div class="p-3.5 bg-[#F6F3EB] border border-[#121212] rounded-lg">
+              <strong class="mono block">Chrome & Node.js</strong>
+              <span class="text-[#52504C]">Engine: <strong>V8</strong>. Node combines V8 with libuv and C++ host bindings.</span>
+            </div>
+            <div class="p-3.5 bg-[#F6F3EB] border border-[#121212] rounded-lg">
+              <strong class="mono block">Mozilla Firefox</strong>
+              <span class="text-[#52504C]">Engine: <strong>SpiderMonkey</strong>.</span>
+            </div>
+            <div class="p-3.5 bg-[#F6F3EB] border border-[#121212] rounded-lg">
+              <strong class="mono block">Apple Safari & Bun</strong>
+              <span class="text-[#52504C]">Engine: <strong>JavaScriptCore</strong> (WebKit is Safari's browser engine).</span>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function runComplexAssignment(num) {
+      const codeBox = document.getElementById('assignment-code');
+      const outBox = document.getElementById('assignment-output');
+      const solutions = {
+        1: {
+          code: `function greetUser(user) {\n  return "Hello " + user.name + ", your age is " + user.age;\n}\n\nconst user = { name: "Harkirat", age: 19 };\nconsole.log(greetUser(user));`,
+          out: `> greetUser({ name: "Harkirat", age: 19 })\n"Hello Harkirat, your age is 19"`
+        },
+        2: {
+          code: `function greetWithLegalCheck(user) {\n  const prefix = user.gender === "male" ? "Mr" : user.gender === "female" ? "Mrs" : "Others";\n  const voteStatus = user.age >= 18 ? "You ARE legal to vote." : "You are NOT legal to vote.";\n  return \`Hi \${prefix} \${user.name}, your age is \${user.age}. \${voteStatus}\`;\n}\n\nconsole.log(greetWithLegalCheck({ name: "harkirat", age: 21, gender: "male" }));`,
+          out: `> greetWithLegalCheck({ name: "harkirat", age: 21, gender: "male" })\n"Hi Mr harkirat, your age is 21. You ARE legal to vote."`
+        },
+        3: {
+          code: `function getEvenNumbers(arr) {\n  return arr.filter((num) => num % 2 === 0);\n}\n\nconsole.log(getEvenNumbers([1, 2, 3, 4, 5, 6, 10]));`,
+          out: `> getEvenNumbers([1, 2, 3, 4, 5, 6, 10])\n[ 2, 4, 6, 10 ]`
+        },
+        4: {
+          code: `function getAdultUsers(users) {\n  return users.filter((u) => u.age > 18);\n}\n\nconst list = [{ name: "Harkirat", age: 21 }, { name: "Junior", age: 16 }];\nconsole.log(getAdultUsers(list));`,
+          out: `> getAdultUsers(list)\n[ { name: "Harkirat", age: 21 } ]`
+        },
+        5: {
+          code: `function getAdultMales(users) {\n  return users.filter((u) => u.age > 18 && u.gender === "male");\n}\n\nconst cohort = [\n  { name: "Harkirat", age: 21, gender: "male" },\n  { name: "Raman", age: 22, gender: "male" },\n  { name: "Ananya", age: 23, gender: "female" }\n];\nconsole.log(getAdultMales(cohort));`,
+          out: `> getAdultMales(cohort)\n[\n  { name: "Harkirat", age: 21, gender: "male" },\n  { name: "Raman", age: 22, gender: "male" }\n]`
+        }
+      };
+      codeBox.innerText = solutions[num].code;
+      outBox.innerText = solutions[num].out;
+    }
+
+    // Event Loop Scenarios Data
+    const elScenarios = {
+      timeout: {
+        code: `console.log("A");\nsetTimeout(() => {\n  console.log("B");\n}, 0);\nconsole.log("C");`,
+        steps: [
+          { msg: 'Step 1: console.log("A") is pushed to the Call Stack and logs "A" immediately.', stack: ['console.log("A")'], apis: [], micro: [], macro: [], out: ['"A"'] },
+          { msg: 'Step 2: setTimeout(..., 0) schedules the callback with the Host Timer API.', stack: ['setTimeout(cb, 0)'], apis: ['Timer (0ms)'], micro: [], macro: [], out: ['"A"'] },
+          { msg: 'Step 3: 0ms threshold elapses; callback moves to the Callback Queue. It must wait because global code is still running!', stack: ['console.log("C")'], apis: [], micro: [], macro: ['cb()'], out: ['"A"', '"C"'] },
+          { msg: 'Step 4: Global synchronous execution finishes. Call Stack is now empty! Event Loop pushes cb() to Call Stack.', stack: ['cb()', 'console.log("B")'], apis: [], micro: [], macro: [], out: ['"A"', '"C"', '"B"'] }
+        ]
+      },
+      blocked: {
+        code: `console.log("A");\nsetTimeout(() => console.log("B"), 100);\nwhile (Date.now() - start < 3000) {\n  // Block JS thread for 3 seconds!\n}\nconsole.log("C");`,
+        steps: [
+          { msg: 'Step 1: "A" logs synchronously, and the 100ms timer is registered in Host APIs.', stack: ['setTimeout(cb, 100)'], apis: ['Timer (100ms)'], micro: [], macro: [], out: ['"A"'] },
+          { msg: 'Step 2: After 100ms, Timer finishes and queues cb(). BUT the while-loop is occupying the Call Stack for 3 full seconds!', stack: ['while (busyLoop 3000ms)'], apis: [], micro: [], macro: ['cb() (Waiting!)'], out: ['"A"'] },
+          { msg: 'Step 3: After 3 seconds, the loop finishes and console.log("C") runs before the queued timer callback can ever enter!', stack: ['console.log("C")'], apis: [], micro: [], macro: ['cb()'], out: ['"A"', '"C"'] },
+          { msg: 'Step 4: Call Stack is finally empty. Event Loop moves cb() to the Call Stack and logs "B".', stack: ['cb() -> log("B")'], apis: [], micro: [], macro: [], out: ['"A"', '"C"', '"B"'] }
+        ]
+      },
+      microtask: {
+        code: `console.log(1);\nsetTimeout(() => console.log(2), 0);\nPromise.resolve().then(() => console.log(3));\nconsole.log(4);`,
+        steps: [
+          { msg: 'Step 1: console.log(1) runs synchronously.', stack: ['console.log(1)'], apis: [], micro: [], macro: [], out: ['1'] },
+          { msg: 'Step 2: setTimeout(0) queues log(2) in the Callback Queue; Promise.resolve().then() queues log(3) in the VIP Microtask Queue.', stack: ['Promise.then(...)'], apis: [], micro: ['() => log(3)'], macro: ['() => log(2)'], out: ['1'] },
+          { msg: 'Step 3: console.log(4) runs synchronously before any queued callbacks.', stack: ['console.log(4)'], apis: [], micro: ['() => log(3)'], macro: ['() => log(2)'], out: ['1', '4'] },
+          { msg: 'Step 4: Call Stack empties! Event Loop checks Microtask Queue FIRST and executes log(3).', stack: ['log(3) [Microtask]'], apis: [], micro: [], macro: ['() => log(2)'], out: ['1', '4', '3'] },
+          { msg: 'Step 5: Microtask Queue is empty. Event Loop now processes the Callback Queue and executes log(2).', stack: ['log(2) [Timer]'], apis: [], micro: [], macro: [], out: ['1', '4', '3', '2'] }
+        ]
+      }
+    };
+
+    function changeEventLoopScenario(mode) {
+      appState.eventLoopMode = mode;
+      appState.eventLoopStep = 0;
+      renderEventLoopState();
+    }
+
+    function stepEventLoopSim() {
+      const steps = elScenarios[appState.eventLoopMode].steps;
+      renderEventLoopState(steps[appState.eventLoopStep]);
+      appState.eventLoopStep = (appState.eventLoopStep + 1) % steps.length;
+    }
+
+    function resetEventLoopSim() {
+      appState.eventLoopStep = 0;
+      renderEventLoopState();
+    }
+
+    function renderEventLoopState(stepObj = null) {
+      const codeBox = document.getElementById('el-code-box');
+      if (!codeBox) return;
+      codeBox.innerText = elScenarios[appState.eventLoopMode].code;
+
+      if (!stepObj) {
+        document.getElementById('el-narration').innerHTML = `Press <strong>"▶ Next Step"</strong> to trace execution.`;
+        ['el-stack', 'el-apis', 'el-micro', 'el-macro'].forEach(id => document.getElementById(id).innerHTML = '');
+        document.getElementById('el-console').innerText = '[]';
+        return;
+      }
+
+      document.getElementById('el-narration').innerText = stepObj.msg;
+      const badge = (txt, dark = false) => `<div class="px-2 py-1 rounded ${dark ? 'bg-[#121212] text-[#F6F3EB]' : 'bg-[#EFECE3] border border-[#121212]'}">${txt}</div>`;
+      document.getElementById('el-stack').innerHTML = stepObj.stack.map(x => badge(x, true)).join('');
+      document.getElementById('el-apis').innerHTML = stepObj.apis.map(x => badge(x)).join('');
+      document.getElementById('el-micro').innerHTML = stepObj.micro.map(x => badge(x, true)).join('');
+      document.getElementById('el-macro').innerHTML = stepObj.macro.map(x => badge(x)).join('');
+      document.getElementById('el-console').innerText = `[ ${stepObj.out.join(', ')} ]`;
+    }
+
+    // Concurrent File Write Counter Simulator
+    function simulateConcurrentWrites() {
+      resetConcurrentWrites();
+      const order = [
+        { id: 2, delay: 450, name: 'code/package.json' },
+        { id: 3, delay: 900, name: 'code/readme.txt' },
+        { id: 1, delay: 1450, name: 'code/index.js' }
+      ];
+      [1, 2, 3].forEach(i => {
+        document.getElementById(`file-status-${i}`).innerText = '⏳ Writing to disk...';
+      });
+
+      let completed = 0;
+      order.forEach((item) => {
+        setTimeout(() => {
+          completed++;
+          const box = document.getElementById(`file-box-${item.id}`);
+          const st = document.getElementById(`file-status-${item.id}`);
+          if (box && st) {
+            box.classList.add('bg-[#121212]', 'text-[#F6F3EB]');
+            st.className = 'text-[#E6E1D5] font-bold';
+            st.innerText = `✓ Finished (#${completed} to complete)`;
+          }
+          const readout = document.getElementById('counter-readout');
+          const cbStatus = document.getElementById('counter-cb-status');
+          if (readout) readout.innerText = `COUNTER STATE: completed = ${completed} / 3`;
+          if (completed === 3 && cbStatus) {
+            cbStatus.className = 'px-2.5 py-1 bg-[#F6F3EB] text-[#121212] font-bold rounded';
+            cbStatus.innerText = '🎉 completed === total (3/3) -> cb(null) INVOKED!';
+          }
+        }, item.delay);
+      });
+    }
+
+    function resetConcurrentWrites() {
+      [1, 2, 3].forEach(i => {
+        const box = document.getElementById(`file-box-${i}`);
+        const st = document.getElementById(`file-status-${i}`);
+        if (box && st) {
+          box.className = 'p-4 bg-[#F6F3EB] border border-[#121212] rounded-lg space-y-1';
+          st.className = 'text-[#52504C]';
+          st.innerText = 'Idle';
+        }
+      });
+      const readout = document.getElementById('counter-readout');
+      const cbStatus = document.getElementById('counter-cb-status');
+      if (readout) readout.innerText = 'COUNTER STATE: completed = 0 / 3';
+      if (cbStatus) {
+        cbStatus.className = 'px-2 py-0.5 bg-[#F6F3EB]/20 rounded';
+        cbStatus.innerText = 'Final cb() waiting...';
+      }
+    }
+
+    // Promise Buzzer Simulator
+    function setPromiseSim(state) {
+      const badge = document.getElementById('promise-state-badge');
+      const desc = document.getElementById('promise-state-desc');
+      const handler = document.getElementById('promise-handler-triggered');
+      if (state === 'pending') {
+        badge.innerText = 'State: PENDING ⏳';
+        desc.innerText = 'You ordered food and received a buzzer. The operation is in progress.';
+        handler.innerText = 'Active Handler: None yet (Waiting...)';
+      } else if (state === 'fulfilled') {
+        badge.innerText = 'State: FULFILLED ✓';
+        desc.innerText = 'Your order succeeded! Once settled as fulfilled, it can never transition again.';
+        handler.innerText = 'Triggered: .then(data) -> .finally()';
+      } else {
+        badge.innerText = 'State: REJECTED ✗';
+        desc.innerText = 'Something went wrong with the order. Rejection reason is passed to .catch().';
+        handler.innerText = 'Triggered: .catch(err) -> .finally()';
+      }
+    }
+
+    // GitHub Gist Bug Fixes Viewer
+    function showGistFix(idx) {
+      [1, 2, 3].forEach(i => {
+        const b = document.getElementById(`gist-btn-${i}`);
+        if (b) b.classList.toggle('nav-active', i === idx);
+      });
+      const container = document.getElementById('gist-diff-container');
+      if (!container) return;
+
+      const diffs = {
+        1: {
+          bugTitle: '❌ Gist Bug: Missing resolve() inside Timer',
+          bugCode: `function setTimeoutPromisified(duration) {\n  return new Promise((resolve) => {\n    setTimeout(() => {\n      console.log(\`Hello after \${duration}ms\`);\n      // BUG: Forgot to call resolve()!\n      // Promise stays <pending> forever!\n    }, duration);\n  });\n}`,
+          fixTitle: '✓ Corrected Implementation (§11.1)',
+          fixCode: `function setTimeoutPromisified(duration) {\n  return new Promise((resolve) => {\n    setTimeout(() => {\n      console.log(\`Hello after \${duration}ms\`);\n      resolve(); // Fulfills the Promise!\n    }, duration);\n  });\n}`
+        },
+        2: {
+          bugTitle: '❌ Gist Bug: Premature Callback in readTimer()',
+          bugCode: `// Earlier Gist version called cb() right after\n// scheduling the first timer instead of waiting\n// for writeFile and the second timer m!`,
+          fixTitle: '✓ Corrected Sequential Nesting (§11.2)',
+          fixCode: `function readTimer(n, m, path, cb) {\n  fs.readFile(path, "utf8", (err, data) => {\n    if (err) return cb(err);\n    setTimeout(() => {\n      fs.writeFile(path, data.toUpperCase(), (err) => {\n        if (err) return cb(err);\n        setTimeout(() => cb(null), m);\n      });\n    }, n);\n  });\n}`
+        },
+        3: {
+          bugTitle: '❌ Gist Bug: Unhandled JSON.parse & Write Errors',
+          bugCode: `// Gist version incremented counter without\n// guarding against JSON.parse exceptions or\n// duplicate cb(err) invocations.`,
+          fixTitle: '✓ Modern Promise.all() Solution (§11.3)',
+          fixCode: `async function createCode(filePath) {\n  const text = await fs.readFile(filePath, "utf8");\n  const files = JSON.parse(text);\n  await Promise.all(\n    files.map(({ path, contents }) =>\n      fs.writeFile(path, contents, "utf8")\n    )\n  );\n}`
+        }
+      };
+
+      const d = diffs[idx];
+      container.innerHTML = `
+        <div class="bg-[#F6F3EB] border border-[#121212] p-4 rounded-lg space-y-2">
+          <div class="font-bold mono text-[#121212]">${d.bugTitle}</div>
+          <pre class="text-[11px] overflow-x-auto text-[#52504C]">${d.bugCode}</pre>
+        </div>
+        <div class="bg-[#121212] text-[#F6F3EB] p-4 rounded-lg space-y-2">
+          <div class="font-bold mono text-[#E6E1D5]">${d.fixTitle}</div>
+          <pre class="text-[11px] overflow-x-auto">${d.fixCode}</pre>
+        </div>
+      `;
+    }
+
+    // Glossary Data from Lecture 2 §15
+    const glossaryTerms = [
+      ['Asynchronous programming', 'Start work and handle its result later without blocking the caller.'],
+      ['Synchronous programming', 'Each operation completes before the next dependent step proceeds.'],
+      ['Callback', 'A function passed to another function for it to invoke at an appropriate point.'],
+      ['Callback hell', 'Excessive nesting of callbacks that makes control flow hard to maintain.'],
+      ['Promise', 'An object representing the eventual fulfillment or rejection of an async operation.'],
+      ['pending / fulfilled / rejected', 'The 3 states of a Promise: waiting, succeeded, or failed.'],
+      ['resolve / reject', 'Functions that settle a Promise as fulfilled or rejected.'],
+      ['Promise chaining', 'Connecting dependent async steps by returning Promises from .then().'],
+      ['Promisification', 'Wrapping a callback-based API inside a Promise-returning function.'],
+      ['Microtask', 'High-priority scheduled work (like Promise .then/.catch reactions) processed before timers.'],
+      ['I/O-bound vs CPU-bound', 'Waiting on files/network/DB vs spending time doing heavy CPU calculation.'],
+      ['Concurrency vs Parallelism', 'Overlapping progress on 1 core (interleaving) vs simultaneous execution on multiple cores.'],
+      ['Process vs Thread', 'Isolated OS program instance with its own virtual memory vs an execution path sharing process memory.'],
+      ['GIL (Global Interpreter Lock)', 'Lock in conventional CPython limiting simultaneous Python bytecode execution across threads.'],
+      ['Future & Executor (Rust)', 'Rust abstraction for a value ready later, driven by an async runtime like Tokio.'],
+      ['Race condition', 'Correctness bug where output depends on unpredictable timing of concurrent operations.']
+    ];
+
+    function filterGlossary(query = '') {
+      const grid = document.getElementById('glossary-grid');
+      if (!grid) return;
+      const q = query.toLowerCase().trim();
+      const filtered = glossaryTerms.filter(([t, d]) => t.toLowerCase().includes(q) || d.toLowerCase().includes(q));
+      grid.innerHTML = filtered.map(([term, def]) => `
+        <div class="p-3 bg-[#F6F3EB] border border-[#121212] rounded-lg">
+          <div class="font-bold mono text-xs text-[#121212]">${term}</div>
+          <div class="text-xs text-[#52504C] mt-1">${def}</div>
+        </div>
+      `).join('');
+    }
+
+    // Official 5-Question Quiz from Lecture 1 §13
+    const quizQuestions = [
+      {
+        id: 'q1',
+        q: '1. What is the output order of: console.log("A"); setTimeout(() => console.log("B"), 0); console.log("C");',
+        options: ['A, B, C', 'A, C, B', 'B, A, C'],
+        correct: 1,
+        explain: 'setTimeout schedules "B" for later; synchronous code continues and logs "C" before the Call Stack empties.'
+      },
+      {
+        id: 'q2',
+        q: '2. What happens if a synchronous while-loop occupies the JS thread for 2 seconds after a 100ms timer is scheduled?',
+        options: ['Timer prints before Finished', 'Finished prints before Timer', 'The timer is cancelled'],
+        correct: 1,
+        explain: 'A timer callback cannot interrupt a running synchronous loop on the Call Stack. "Finished" prints first!'
+      },
+      {
+        id: 'q3',
+        q: '3. Does files.forEach(file => fs.writeFile(...)) wait for all file writes to finish before moving to the next line?',
+        options: ['Yes, forEach waits', 'No, forEach does not wait for async writes', 'Only when writes finish in order'],
+        correct: 1,
+        explain: 'forEach iterates synchronously and launches all writes, returning immediately before the disk operations complete.'
+      },
+      {
+        id: 'q4',
+        q: '4. In an error-first callback (err, data) => {}, what should happen first?',
+        options: ['Use data immediately', 'Check err and handle failure first', 'Call the callback twice'],
+        correct: 1,
+        explain: 'Always check if (err) first, report/propagate the error, and return early.'
+      },
+      {
+        id: 'q5',
+        q: '5. Three independent async file writes (A, B, C) are started in order. Which completion order is guaranteed?',
+        options: ['A, then B, then C', 'C, then B, then A', 'Start order does not guarantee completion order'],
+        correct: 2,
+        explain: 'OS disk scheduling and file sizes vary; completion order is never guaranteed, which is why we use a completion counter!'
+      }
+    ];
+
+    function renderQuiz() {
+      const mount = document.getElementById('quiz-mount');
+      if (!mount) return;
+      mount.innerHTML = quizQuestions.map((item, idx) => `
+        <div class="p-4 bg-[#F6F3EB] border border-[#121212] rounded-xl space-y-2.5">
+          <div class="font-semibold text-xs lg:text-sm">${item.q}</div>
+          <div class="flex flex-wrap gap-2">
+            ${item.options.map((opt, oIdx) => `
+              <button onclick="answerQuiz('${item.id}', ${oIdx}, ${item.correct})" class="editorial-btn bg-[#EFECE3] px-3 py-1.5 rounded text-xs mono">
+                ${opt}
+              </button>
+            `).join('')}
+          </div>
+          <div id="feedback-${item.id}" class="hidden text-xs p-2.5 rounded border border-[#121212] mono"></div>
+        </div>
+      `).join('');
+    }
+
+    function answerQuiz(qId, chosen, correct) {
+      const fb = document.getElementById(`feedback-${qId}`);
+      const qObj = quizQuestions.find(x => x.id === qId);
+      fb.classList.remove('hidden');
+      if (chosen === correct) {
+        fb.className = 'text-xs p-2.5 rounded bg-[#121212] text-[#F6F3EB] mono';
+        fb.innerHTML = `✓ Correct! ${qObj.explain}`;
+        appState.quizAnswered[qId] = true;
+      } else {
+        fb.className = 'text-xs p-2.5 rounded bg-[#E6E1D5] border border-[#121212] text-[#121212] mono';
+        fb.innerHTML = `✗ Try again. Hint: ${qObj.explain}`;
+      }
+      updateMasteryUI();
+    }
+
+    function toggleChecklist(key, checked) {
+      appState.checklistItems[key] = checked;
+      updateMasteryUI();
+    }
+
+    // Module Router
+    function switchModule(modId) {
+      appState.currentModule = modId;
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('nav-active'));
+      const activeBtn = document.getElementById(`btn-${modId}`);
+      if (activeBtn) activeBtn.classList.add('nav-active');
+
+      const mount = document.getElementById('content-mount');
+      mount.innerHTML = moduleTemplates[modId]();
+
+      // Initialize module-specific interactive widgets
+      if (modId === 'js-properties') showRuntimeTab('frontend');
+      if (modId === 'complex-types') runComplexAssignment(1);
+      if (modId === 'event-loop-arch') renderEventLoopState();
+      if (modId === 'async-await-gist') showGistFix(1);
+      if (modId === 'multithreading-glossary') filterGlossary('');
+      if (modId === 'wispr-practice') renderQuiz();
+
+      // Close mobile drawer if open
+      const sb = document.getElementById('sidebar');
+      if (window.innerWidth < 1024 && !sb.classList.contains('-translate-x-full')) {
+        sb.classList.add('-translate-x-full');
+      }
+    }
+
+    window.onload = function () {
+      switchModule('js-properties');
+      updateMasteryUI();
+    };
+  </script>
+</body>
+</html>
