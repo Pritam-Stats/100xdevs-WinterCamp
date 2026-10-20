@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>100xDevs Winter Camp — Cohort Study Vault</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-canvas: #F6F3EB;
+      --bg-card: #EFECE3;
+      --bg-elevated: #E6E1D5;
+      --ink-black: #121212;
+      --ink-muted: #52504C;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--ink-black);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .serif-title {
+      font-family: 'Instrument Serif', Georgia, serif;
+    }
+
+    code, pre, .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Editorial Brutalist Accents */
+    .brutalist-card {
+      background-color: var(--bg-card);
+      border: 1.5px solid var(--ink-black);
+      box-shadow: 4px 4px 0px var(--ink-black);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .brutalist-card:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px var(--ink-black);
+    }
+
+    .brutalist-card-static {
+      background-color: var(--bg-card);
+      border: 1.5px solid var(--ink-black);
+      box-shadow: 3px 3px 0px var(--ink-black);
+    }
+
+    .brutalist-btn {
+      border: 1.5px solid var(--ink-black);
+      box-shadow: 2px 2px 0px var(--ink-black);
+      transition: all 0.15s ease;
+    }
+
+    .brutalist-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0px var(--ink-black);
+    }
+
+    .brutalist-btn:active {
+      transform: translate(1px, 1px);
+      box-shadow: 0px 0px 0px var(--ink-black);
+    }
+
+    .tag-active {
+      background-color: var(--ink-black) !important;
+      color: var(--bg-canvas) !important;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #EAE5D9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #121212;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col justify-between selection:bg-[#121212] selection:text-[#F6F3EB]">
+
+  <!-- TOP ANNOUNCEMENT BAR -->
+  <div class="border-b-2 border-[#121212] bg-[#E6E1D5] px-4 py-2 text-center text-xs mono tracking-wider font-medium flex items-center justify-center gap-3">
+    <span class="inline-block w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+    <span>100xDevs Winter Camp • Complete Knowledge Vault</span>
+  </div>
+
+  <div class="max-w-4xl w-full mx-auto px-6 py-12 space-y-12 flex-1">
+
+    <!-- HERO HEADER -->
+    <header class="border-b-2 border-[#121212] pb-8 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <span class="mono text-xs font-bold uppercase px-3 py-1 bg-[#121212] text-[#F6F3EB] rounded">
+          Central Dashboard & Router
+        </span>
+        <span class="mono text-xs text-[#52504C] border border-[#121212] px-2.5 py-0.5 rounded-full">
+          Instructor: Harkirat Singh
+        </span>
+      </div>
+
+      <h1 class="serif-title text-4xl sm:text-6xl font-bold tracking-tight text-[#121212] leading-[1.1]">
+        100xDevs Cohort Vault
+      </h1>
+      
+      <p class="text-sm sm:text-base text-[#52504C] max-w-2xl leading-relaxed">
+        The master directory connecting all interactive field manuals, runtime visualizers, code labs, and assignments across cohort weeks.
+      </p>
+
+      <!-- LIVE PROGRESS & SEARCH BAR -->
+      <div class="pt-4 grid sm:grid-cols-12 gap-4 items-center">
+        <div class="sm:col-span-8 relative">
+          <input 
+            type="text" 
+            id="searchInput" 
+            oninput="filterModules(this.value)"
+            placeholder="Search topics, weeks, or concepts (e.g. async, express, promises, sql)..." 
+            class="w-full bg-[#EFECE3] border-2 border-[#121212] rounded-xl px-4 py-3 text-xs sm:text-sm mono placeholder-[#52504C] focus:outline-none focus:ring-2 focus:ring-[#121212]"
+          />
+        </div>
+        <div class="sm:col-span-4 bg-[#EFECE3] border-2 border-[#121212] rounded-xl p-3 flex items-center justify-between">
+          <div class="text-xs mono">
+            <span class="font-bold text-[#52504C] block uppercase text-[10px]">Cohort Track</span>
+            <span id="tracker-label" class="font-semibold text-xs">Week 01 Ready</span>
+          </div>
+          <span class="text-xs font-mono font-bold bg-[#121212] text-[#F6F3EB] px-2 py-1 rounded">100x</span>
+        </div>
+      </div>
+
+      <!-- FILTER TAGS -->
+      <div class="flex flex-wrap gap-2 pt-2 text-xs mono">
+        <button onclick="setFilter('all')" id="tag-all" class="brutalist-btn px-3 py-1 rounded-md tag-active">All Modules</button>
+        <button onclick="setFilter('js')" id="tag-js" class="brutalist-btn bg-[#EFECE3] px-3 py-1 rounded-md">JavaScript & Runtime</button>
+        <button onclick="setFilter('backend')" id="tag-backend" class="brutalist-btn bg-[#EFECE3] px-3 py-1 rounded-md">Backend & Express</button>
+        <button onclick="setFilter('db')" id="tag-db" class="brutalist-btn bg-[#EFECE3] px-3 py-1 rounded-md">Databases & Auth</button>
+        <button onclick="setFilter('devops')" id="tag-devops" class="brutalist-btn bg-[#EFECE3] px-3 py-1 rounded-md">DevOps & Cloud</button>
+      </div>
+    </header>
+
+    <!-- MODULES / WEEKS DIRECTORY -->
+    <section class="space-y-6">
+      <div class="flex items-center justify-between border-b border-[#121212]/30 pb-2">
+        <h2 class="mono text-xs font-bold uppercase tracking-widest text-[#52504C]">Cohort Curriculum Modules</h2>
+        <span id="module-counter" class="mono text-xs text-[#52504C]">Showing 4 modules</span>
+      </div>
+
+      <div class="space-y-5" id="modules-list">
+
+        <!-- WEEK 1: LIVE LAB -->
+        <article class="module-card brutalist-card rounded-2xl p-6 sm:p-7 block transition" data-tags="js async foundations event-loop callbacks promises">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#121212]/20 pb-4 mb-4">
+            <div class="flex items-center gap-2.5">
+              <span class="mono text-xs font-bold uppercase px-2.5 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">Week 01</span>
+              <span class="mono text-xs font-bold text-emerald-800 bg-emerald-200/70 border border-emerald-800/30 px-2 py-0.5 rounded">LIVE & INTERACTIVE</span>
+            </div>
+            <span class="mono text-xs text-[#52504C]">Oct 20, 2026 • 8 Lecture Files</span>
+          </div>
+
+          <h3 class="serif-title text-2xl sm:text-3xl font-bold text-[#121212]">
+            JS Foundations, Runtime Architecture & Async Engineering
+          </h3>
+          <p class="text-xs sm:text-sm text-[#52504C] mt-2 leading-relaxed">
+            Covers interpreted engines vs runtimes, dynamic typing, CPU vs I/O tasks, the Loupe Event Loop visualizer, error-first callbacks, the food-court buzzer Promise state machine, and cross-language concurrency (JS, Python, Rust, Go).
+          </p>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 text-[11px] mono text-[#52504C]">
+            <div class="bg-[#F6F3EB] p-2 rounded border border-[#121212]/30">✓ Event Loop Stepper</div>
+            <div class="bg-[#F6F3EB] p-2 rounded border border-[#121212]/30">✓ 5-Assignment Runner</div>
+            <div class="bg-[#F6F3EB] p-2 rounded border border-[#121212]/30">✓ 3-File Write Counter</div>
+            <div class="bg-[#F6F3EB] p-2 rounded border border-[#121212]/30">✓ Gist Bug Auditor</div>
+          </div>
+
+          <div class="mt-6 flex flex-wrap items-center justify-between gap-4 pt-2">
+            <div class="text-xs mono text-[#52504C]">
+              Folder: <code class="bg-[#E6E1D5] px-2 py-1 rounded border border-[#121212]/20 text-[#121212]">./week-1-asyncJS/</code>
+            </div>
+            <a href="./week-1-asyncJS/" class="brutalist-btn bg-[#121212] text-[#F6F3EB] font-semibold text-xs mono px-5 py-2.5 rounded-lg flex items-center gap-2">
+              <span>Open Interactive Lab</span>
+              <span>→</span>
+            </a>
+          </div>
+        </article>
+
+        <!-- WEEK 2: UPCOMING LAB -->
+        <article class="module-card brutalist-card rounded-2xl p-6 sm:p-7 block transition opacity-90 hover:opacity-100" data-tags="backend express nodejs crud http">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#121212]/20 pb-4 mb-4">
+            <div class="flex items-center gap-2.5">
+              <span class="mono text-xs font-bold uppercase px-2.5 py-0.5 border border-[#121212] rounded">Week 1.2</span>
+              <span class="mono text-xs font-bold text-amber-900 bg-amber-200/70 border border-amber-900/30 px-2 py-0.5 rounded">NEXT COHORT TOPIC</span>
+            </div>
+            <span class="mono text-xs text-[#52504C]">Oct 22, 2026</span>
+          </div>
+
+          <h3 class="serif-title text-2xl sm:text-3xl font-bold text-[#121212]">
+            Node.js Internals, Express Server Architecture & CRUD APIs
+          </h3>
+          <p class="text-xs sm:text-sm text-[#52504C] mt-2 leading-relaxed">
+            Deep dive into HTTP protocols, status codes, query vs params vs body, request lifecycle, custom middleware pipelines, and writing your first REST endpoints.
+          </p>
+
+          <div class="mt-6 flex flex-wrap items-center justify-between gap-4 pt-2">
+            <div class="text-xs mono text-[#52504C]">
+              Folder: <code class="bg-[#E6E1D5] px-2 py-1 rounded border border-[#121212]/20 text-[#121212]">./week-2-js-advance-notes/</code>
+            </div>
+            <a href="./week-2-js-advance-notes/" class="brutalist-btn bg-[#EFECE3] text-[#121212] font-semibold text-xs mono px-5 py-2.5 rounded-lg flex items-center gap-2">
+              <span>View Module (When Pushed)</span>
+              <span>→</span>
+            </a>
+          </div>
+        </article>
+
+        <!-- WEEK 3: DATABASES & ORMS -->
+        <article class="module-card brutalist-card-static rounded-2xl p-6 sm:p-7 block opacity-75" data-tags="db databases postgres mongodb prisma auth">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#121212]/20 pb-4 mb-4">
+            <div class="flex items-center gap-2.5">
+              <span class="mono text-xs font-bold uppercase px-2.5 py-0.5 border border-[#121212] rounded">Week 03</span>
+              <span class="mono text-xs font-mono text-[#52504C] border border-[#121212]/40 px-2 py-0.5 rounded">SCHEDULED</span>
+            </div>
+            <span class="mono text-xs text-[#52504C]">Upcoming</span>
+          </div>
+
+          <h3 class="serif-title text-2xl font-bold text-[#121212]">
+            Databases, Relational Models, Prisma ORM & Authentication
+          </h3>
+          <p class="text-xs sm:text-sm text-[#52504C] mt-1">
+            PostgreSQL foundations, Mongo ODM vs SQL queries, connection pooling, bcrypt hashing, and JSON Web Token (JWT) stateless auth flows.
+          </p>
+        </article>
+
+        <!-- WEEK 4+: DEVOPS & SYSTEMS -->
+        <article class="module-card brutalist-card-static rounded-2xl p-6 sm:p-7 block opacity-75" data-tags="devops docker ci/cd cloud rust">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#121212]/20 pb-4 mb-4">
+            <div class="flex items-center gap-2.5">
+              <span class="mono text-xs font-bold uppercase px-2.5 py-0.5 border border-[#121212] rounded">Week 04+</span>
+              <span class="mono text-xs font-mono text-[#52504C] border border-[#121212]/40 px-2 py-0.5 rounded">ROADMAP</span>
+            </div>
+            <span class="mono text-xs text-[#52504C]">Upcoming</span>
+          </div>
+
+          <h3 class="serif-title text-2xl font-bold text-[#121212]">
+            Full-Stack Systems, Docker Containers, CI/CD & Monorepos
+          </h3>
+          <p class="text-xs sm:text-sm text-[#52504C] mt-1">
+            Containerization with Docker, multi-stage builds, Turborepo monorepo setups, reverse proxying with NGINX, and cloud deployments on AWS/GCP.
+          </p>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- QUICK GIT HELPER ACCORDION -->
+    <section class="brutalist-card-static rounded-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-sm mono uppercase">⚡ GitHub Subfolder Push Cheatsheet</span>
+        </div>
+        <button onclick="toggleGitSnippet()" id="git-toggle-btn" class="text-xs mono font-bold underline cursor-pointer">
+          [Show Commands]
+        </button>
+      </div>
+
+      <p class="text-xs text-[#52504C]">
+        Whenever you finish a new week's notes or lab, place its <code>index.html</code> inside its own subfolder and push it with these 3 commands:
+      </p>
+
+      <div id="git-snippet-box" class="hidden">
+        <pre class="bg-[#121212] text-[#F6F3EB] p-4 rounded-xl text-xs mono overflow-x-auto leading-relaxed"># 1. Add all week folders and the root index.html
+git add .
+
+# 2. Commit your new cohort class notes
+git commit -m "Add Week 2 advanced JS and Express notes"
+
+# 3. Push to GitHub (Pages will automatically update both URLs!)
+git push origin main</pre>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- EDITORIAL FOOTER -->
+  <footer class="border-t-2 border-[#121212] bg-[#EFECE3] px-6 py-6 text-xs mono text-[#52504C]">
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div>
+        <strong>100xDevs Winter Camp Vault</strong> — Open Source Engineering Companion
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="https://github.com/Pritam-Stats" target="_blank" class="hover:text-[#121212] underline">GitHub Profile</a>
+        <span>•</span>
+        <a href="https://developer.mozilla.org" target="_blank" class="hover:text-[#121212] underline">MDN Web Docs</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- CONTROLLER SCRIPT -->
+  <script>
+    let currentFilter = 'all';
+
+    function setFilter(tag) {
+      currentFilter = tag;
+      const buttons = ['all', 'js', 'backend', 'db', 'devops'];
+      buttons.forEach(b => {
+        const btn = document.getElementById(`tag-${b}`);
+        if (btn) btn.classList.toggle('tag-active', b === tag);
+      });
+      applyFilters();
+    }
+
+    function filterModules(query) {
+      applyFilters(query);
+    }
+
+    function applyFilters(query = '') {
+      const q = (query || document.getElementById('searchInput').value).toLowerCase().trim();
+      const cards = document.querySelectorAll('.module-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        const tags = card.getAttribute('data-tags') || '';
+        const matchesQuery = !q || text.includes(q) || tags.includes(q);
+        const matchesTag = (currentFilter === 'all') || tags.includes(currentFilter);
+
+        if (matchesQuery && matchesTag) {
+          card.style.display = 'block';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      document.getElementById('module-counter').innerText = `Showing ${visibleCount} of ${cards.length} modules`;
+    }
+
+    function toggleGitSnippet() {
+      const box = document.getElementById('git-snippet-box');
+      const btn = document.getElementById('git-toggle-btn');
+      if (box.classList.contains('hidden')) {
+        box.classList.remove('hidden');
+        btn.innerText = '[Hide Commands]';
+      } else {
+        box.classList.add('hidden');
+        btn.innerText = '[Show Commands]';
+      }
+    }
+  </script>
+</body>
+</html>
