@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>100xDevs — Backend, Express, Zod & MongoDB Interactive Companion</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-beige: #F6F3EB;
+      --bg-card: #EFECE3;
+      --bg-elevated: #E6E1D5;
+      --ink-black: #121212;
+      --ink-muted: #52504C;
+    }
+
+    body {
+      background-color: var(--bg-beige);
+      color: var(--ink-black);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .serif-title {
+      font-family: 'Instrument Serif', Georgia, serif;
+    }
+
+    code, pre, .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Editorial brutalist-lite borders & shadows */
+    .editorial-card {
+      background-color: var(--bg-card);
+      border: 1.5px solid var(--ink-black);
+      box-shadow: 4px 4px 0px var(--ink-black);
+    }
+
+    .editorial-card-sm {
+      background-color: var(--bg-card);
+      border: 1px solid var(--ink-black);
+      box-shadow: 2px 2px 0px var(--ink-black);
+    }
+
+    .editorial-btn {
+      border: 1.5px solid var(--ink-black);
+      box-shadow: 2px 2px 0px var(--ink-black);
+      transition: all 0.15s ease;
+    }
+
+    .editorial-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0px var(--ink-black);
+    }
+
+    .editorial-btn:active {
+      transform: translate(1px, 1px);
+      box-shadow: 0px 0px 0px var(--ink-black);
+    }
+
+    .nav-active {
+      background-color: var(--ink-black) !important;
+      color: var(--bg-beige) !important;
+      font-weight: 600;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #EAE5D9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #121212;
+      border-radius: 3px;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.97); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+      animation: popIn 0.2s ease-out forwards;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col lg:flex-row selection:bg-[#121212] selection:text-[#F6F3EB]">
+
+  <!-- MOBILE HEADER -->
+  <header class="lg:hidden flex items-center justify-between px-5 py-4 border-b-2 border-[#121212] bg-[#EFECE3] sticky top-0 z-30">
+    <div>
+      <span class="text-[11px] mono uppercase tracking-widest px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">100xDevs • Rahul</span>
+      <h1 class="serif-title text-2xl leading-none mt-1">Backend, Zod & MongoDB</h1>
+    </div>
+    <button onclick="toggleMobileMenu()" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded text-xs mono font-semibold">
+      ☰ Modules
+    </button>
+  </header>
+
+  <!-- LEFT SIDEBAR NAVIGATION -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-80 bg-[#EFECE3] border-r-2 border-[#121212] flex flex-col transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-200 ease-in-out shrink-0">
+    <!-- Brand Header -->
+    <div class="p-6 border-b-2 border-[#121212]">
+      <div class="flex items-center justify-between">
+        <span class="px-2.5 py-0.5 text-[11px] font-bold bg-[#121212] text-[#F6F3EB] rounded-full mono uppercase tracking-wider">100xDevs Cohort</span>
+        <span class="text-xs mono text-[#52504C]">Oct 22, 2026</span>
+      </div>
+      <h1 class="serif-title text-3xl text-[#121212] mt-3 leading-tight">Backend Field Manual</h1>
+      <p class="text-xs text-[#52504C] mt-1">Instructor: Rahul • Server Basics, Zod & MongoDB</p>
+
+      <!-- Search Bar -->
+      <div class="mt-4 relative">
+        <input
+          type="text"
+          id="topic-search"
+          oninput="filterNavigation(this.value)"
+          placeholder="Filter modules (e.g. Zod, REST, Pool)..."
+          class="w-full bg-[#F6F3EB] border border-[#121212] rounded-lg px-3 py-1.5 text-xs mono placeholder-[#52504C] focus:outline-none focus:ring-2 focus:ring-[#121212]"
+        />
+      </div>
+    </div>
+
+    <!-- Navigation List -->
+    <nav class="flex-1 overflow-y-auto p-4 space-y-6" id="nav-container">
+      <!-- Part I: Lecture 1 — Server & Express -->
+      <div class="nav-group">
+        <div class="px-2 pb-1.5 text-[11px] font-bold uppercase tracking-widest text-[#52504C] mono border-b border-[#121212]/20">
+          Part I • Servers & REST Networking
+        </div>
+        <div class="mt-2 space-y-1.5">
+          <button onclick="switchModule('servers-npm')" id="btn-servers-npm" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>1. Servers, Node.js, NPM & Ports</span>
+            <span class="mono text-[10px] opacity-70">01</span>
+          </button>
+          <button onclick="switchModule('rest-networking')" id="btn-rest-networking" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>2. DNS, REST APIs, Methods & Status</span>
+            <span class="mono text-[10px] px-1.5 py-0.5 bg-[#121212]/10 rounded">SIM</span>
+          </button>
+          <button onclick="switchModule('http-inputs')" id="btn-http-inputs" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>3. 4 HTTP Inputs (Params, Query, Body)</span>
+            <span class="mono text-[10px] px-1.5 py-0.5 bg-[#121212]/10 rounded">LAB</span>
+          </button>
+          <button onclick="switchModule('notes-crud-sim')" id="btn-notes-crud-sim" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>4. In-Memory Notes CRUD & Splice</span>
+            <span class="mono text-[10px] px-1.5 py-0.5 bg-[#121212]/10 rounded">SIM</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Part II: Middleware & Zod Validation -->
+      <div class="nav-group">
+        <div class="px-2 pb-1.5 text-[11px] font-bold uppercase tracking-widest text-[#52504C] mono border-b border-[#121212]/20">
+          Part II • Middleware & Zod Contracts
+        </div>
+        <div class="mt-2 space-y-1.5">
+          <button onclick="switchModule('middleware-pipeline')" id="btn-middleware-pipeline" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>5. Express Middleware Pipeline & next()</span>
+            <span class="mono text-[10px] px-1.5 py-0.5 bg-[#121212]/10 rounded">SIM</span>
+          </button>
+          <button onclick="switchModule('zod-internals')" id="btn-zod-internals" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>6. Zod Validation & safeParse Engine</span>
+            <span class="mono text-[10px] px-1.5 py-0.5 bg-[#121212]/10 rounded">LAB</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Part III: Persistence, Scaling & MongoDB -->
+      <div class="nav-group">
+        <div class="px-2 pb-1.5 text-[11px] font-bold uppercase tracking-widest text-[#52504C] mono border-b border-[#121212]/20">
+          Part III • Scaling & MongoDB Internals
+        </div>
+        <div class="mt-2 space-y-1.5">
+          <button onclick="switchModule('scaling-persistence')" id="btn-scaling-persistence" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>7. RAM vs Files & Load Balancer Split-Brain</span>
+            <span class="mono text-[10px] px-1.5 py-0.5 bg-[#121212]/10 rounded">SIM</span>
+          </button>
+          <button onclick="switchModule('mongodb-mongoose')" id="btn-mongodb-mongoose" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>8. MongoDB Atlas, Mongoose & Pools</span>
+            <span class="mono text-[10px] px-1.5 py-0.5 bg-[#121212]/10 rounded">SIM</span>
+          </button>
+          <button onclick="switchModule('e2e-checkpoints')" id="btn-e2e-checkpoints" class="nav-btn w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium hover:bg-[#E6E1D5] transition flex items-center justify-between">
+            <span>9. E2E Todo API & Mastery Checkpoints</span>
+            <span class="mono text-[10px] px-1.5 py-0.5 bg-[#121212]/10 rounded">QUIZ</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Progress Footer -->
+    <div class="p-4 border-t-2 border-[#121212] bg-[#E6E1D5]">
+      <div class="flex items-center justify-between text-xs mono mb-1.5">
+        <span class="font-semibold">MASTERY CHECKLIST</span>
+        <span id="mastery-score" class="font-bold">0 / 12</span>
+      </div>
+      <div class="w-full h-2 bg-[#F6F3EB] border border-[#121212] rounded-full overflow-hidden">
+        <div id="mastery-bar" class="h-full bg-[#121212] w-0 transition-all duration-300"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT WORKSPACE -->
+  <main class="flex-1 overflow-y-auto px-5 py-8 lg:px-14 lg:py-12">
+    <div id="content-mount" class="max-w-4xl mx-auto"></div>
+  </main>
+
+  <script>
+    // Global State
+    const appState = {
+      currentModule: 'servers-npm',
+      quizAnswered: {},
+      checklistItems: {
+        c1: false, c2: false, c3: false, c4: false, c5: false, c6: false
+      },
+      memoryNotes: [
+        { title: "Learning Node.js", description: "Today I learned how to create an Express server" },
+        { title: "Learning HTTP", description: "GET, POST, PUT, PATCH and DELETE requests" }
+      ],
+      mwStep: 0,
+      lbIndex: 0,
+      lbLocalStores: { A: [], B: [], C: [] },
+      lbSharedDb: [],
+      poolActiveCount: 1
+    };
+
+    function updateMasteryUI() {
+      const quizCount = Object.values(appState.quizAnswered).filter(Boolean).length;
+      const checkCount = Object.values(appState.checklistItems).filter(Boolean).length;
+      const total = quizCount + checkCount;
+      document.getElementById('mastery-score').innerText = `${total} / 12`;
+      document.getElementById('mastery-bar').style.width = `${Math.min(100, (total / 12) * 100)}%`;
+    }
+
+    function toggleMobileMenu() {
+      const sb = document.getElementById('sidebar');
+      sb.classList.toggle('-translate-x-full');
+    }
+
+    function filterNavigation(query) {
+      const q = query.toLowerCase().trim();
+      const buttons = document.querySelectorAll('.nav-btn');
+      buttons.forEach(btn => {
+        const text = btn.innerText.toLowerCase();
+        btn.style.display = text.includes(q) ? 'flex' : 'none';
+      });
+    }
+
+    const moduleTemplates = {
+      'servers-npm': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex flex-wrap items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">LECTURE 1 (§1–§5)</span>
+              <span>Server Basics</span>
+              <span>•</span>
+              <span>Node.js, NPM, Express & Ports</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl text-[#121212]">Servers, Node.js, Packages & Network Ports</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2 leading-relaxed">
+              A <strong>server</strong> is both a software program that listens for client requests and the physical/virtual machine running that program. In this cohort, our backend stack is <strong>JavaScript + Node.js + Express + Zod + MongoDB</strong>.
+            </p>
+          </div>
+
+          <!-- 3 Analogies Grid -->
+          <div class="grid md:grid-cols-3 gap-5">
+            <div class="editorial-card p-5 rounded-xl space-y-2">
+              <span class="mono text-[11px] font-bold uppercase px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">Analogy 01</span>
+              <h3 class="serif-title text-2xl">The Restaurant Kitchen</h3>
+              <p class="text-xs text-[#52504C] leading-relaxed">
+                <strong>Client</strong> (Browser/Postman) = Customer.<br>
+                <strong>API Request</strong> = The Order.<br>
+                <strong>Backend</strong> = The Kitchen.<br>
+                <strong>Response</strong> = The Prepared Dish.<br>
+                The customer doesn't need to know how the kitchen works internally—only the contract to place an order.
+              </p>
+            </div>
+
+            <div class="editorial-card p-5 rounded-xl space-y-2">
+              <span class="mono text-[11px] font-bold uppercase px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">Analogy 02</span>
+              <h3 class="serif-title text-2xl">Engine vs. Vehicle</h3>
+              <p class="text-xs text-[#52504C] leading-relaxed">
+                <strong>V8</strong> is the engine that executes JavaScript.<br>
+                <strong>Node.js</strong> is the vehicle built around V8—adding steering, brakes, and controls (file access via <code>fs</code>, networking via <code>http</code>, and background jobs).
+              </p>
+            </div>
+
+            <div class="editorial-card p-5 rounded-xl space-y-2">
+              <span class="mono text-[11px] font-bold uppercase px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">Analogy 03</span>
+              <h3 class="serif-title text-2xl">Office Building & Port</h3>
+              <p class="text-xs text-[#52504C] leading-relaxed">
+                <strong>IP Address</strong> = The street address of an office building.<br>
+                <strong>Port</strong> = The specific office room number inside that building (<code>3000</code> for Express, <code>27017</code> for MongoDB, <code>5432</code> for PostgreSQL).
+              </p>
+            </div>
+          </div>
+
+          <!-- NPM & Project Files Explorer -->
+          <div class="editorial-card p-6 rounded-xl space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#121212]/20 pb-4">
+              <div>
+                <span class="text-xs mono uppercase font-bold">§3 Interactive File Inspector</span>
+                <h3 class="serif-title text-2xl">NPM & The Recipe Analogy</h3>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button onclick="showNpmTab('pkg')" id="npm-btn-pkg" class="editorial-btn px-3 py-1 rounded text-xs mono nav-active">1. package.json</button>
+                <button onclick="showNpmTab('lock')" id="npm-btn-lock" class="editorial-btn bg-[#F6F3EB] px-3 py-1 rounded text-xs mono">2. package-lock.json</button>
+                <button onclick="showNpmTab('modules')" id="npm-btn-modules" class="editorial-btn bg-[#F6F3EB] px-3 py-1 rounded text-xs mono">3. node_modules/</button>
+              </div>
+            </div>
+            <div id="npm-inspector-box" class="text-xs space-y-3"></div>
+          </div>
+
+          <!-- First Express Server & URL Anatomy -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="editorial-card p-5 rounded-xl space-y-3">
+              <h3 class="serif-title text-2xl">Your First Express HTTP Server</h3>
+              <p class="text-xs text-[#52504C]">Defining routes does <strong>not</strong> start the server! Without <code>app.listen(3000)</code>, Node never binds to the OS network port.</p>
+              <pre class="bg-[#121212] text-[#F6F3EB] p-3.5 rounded-lg text-xs overflow-x-auto">const express = require("express");
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
+app.get("/about", (req, res) => {
+  res.send("This is my first backend application");
+});
+
+// Starts listening for TCP connections on port 3000
+app.listen(3000, () => {
+  console.log("Server running at http://localhost:3000");
+});</pre>
+            </div>
+
+            <div class="editorial-card p-5 rounded-xl space-y-3">
+              <h3 class="serif-title text-2xl">Anatomy of a Localhost URL & Default Ports</h3>
+              <div class="bg-[#121212] text-[#F6F3EB] p-3 rounded-lg text-xs mono">
+                <span class="text-amber-300">http://</span><span class="text-emerald-300">localhost</span>:<span class="text-sky-300">3000</span><span class="text-rose-300">/about</span>
+              </div>
+              <ul class="text-xs text-[#52504C] space-y-1.5">
+                <li>• <code>http://</code> — Protocol / scheme</li>
+                <li>• <code>localhost</code> — Hostname referring to your own machine (<code>127.0.0.1</code>)</li>
+                <li>• <code>3000</code> — Logical Port endpoint</li>
+                <li>• <code>/about</code> — Route Path</li>
+              </ul>
+              <div class="pt-2 border-t border-[#121212]/20 grid grid-cols-2 gap-2 text-[11px] mono">
+                <div class="p-2 bg-[#F6F3EB] border border-[#121212] rounded">HTTP: <strong>80</strong> | HTTPS: <strong>443</strong></div>
+                <div class="p-2 bg-[#F6F3EB] border border-[#121212] rounded">MongoDB: <strong>27017</strong> | PG: <strong>5432</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `,
+
+      'rest-networking': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">LECTURE 1 (§6–§10)</span>
+              <span>DNS, Request-Response Cycle, REST API & Status Codes</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">How REST APIs & HTTP Networking Work Internally</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2 leading-relaxed">
+              <strong>HTTP</strong> is the communication protocol; <strong>REST (Representational State Transfer)</strong> is an architectural style on top of HTTP that identifies resources via URLs and uses standard HTTP methods and status codes consistently.
+            </p>
+          </div>
+
+          <!-- Interactive 7-Step Packet Tracer -->
+          <div class="editorial-card p-6 rounded-xl space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#121212]/20 pb-4">
+              <div>
+                <span class="text-xs mono uppercase font-bold">§7 Interactive Network Packet Journey</span>
+                <h3 class="serif-title text-2xl">What Happens When a Browser Reaches Your Server?</h3>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="stepNetworkJourney()" class="editorial-btn bg-[#121212] text-[#F6F3EB] px-3.5 py-1.5 rounded text-xs mono font-semibold">▶ Next Network Hop</button>
+                <button onclick="resetNetworkJourney()" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded text-xs mono">↺ Reset</button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-7 gap-2 text-[11px] mono" id="net-steps-grid"></div>
+            <div id="net-step-detail" class="p-4 bg-[#F6F3EB] border-2 border-[#121212] rounded-lg text-xs leading-relaxed">
+              Click <strong>"▶ Next Network Hop"</strong> to trace a request from URL bar to DNS, TCP/TLS, Express routing, and back.
+            </div>
+          </div>
+
+          <!-- HTTP Methods & Idempotency Table -->
+          <div class="editorial-card overflow-hidden rounded-xl">
+            <div class="p-4 bg-[#121212] text-[#F6F3EB] flex justify-between items-center">
+              <span class="mono text-xs font-bold uppercase">HTTP Methods, CRUD Mapping & Idempotency Semantics</span>
+              <span class="mono text-xs text-[#E6E1D5]">Lecture 1 §8–§9</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="border-b-2 border-[#121212] bg-[#E6E1D5] mono">
+                    <th class="p-3">HTTP Method</th>
+                    <th class="p-3">CRUD Action</th>
+                    <th class="p-3">Endpoint Example</th>
+                    <th class="p-3">Idempotent?</th>
+                    <th class="p-3">Internal Behavior</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[#121212]/20">
+                  <tr>
+                    <td class="p-3 font-bold mono">GET</td>
+                    <td class="p-3">Read</td>
+                    <td class="p-3 mono">/notes or /notes/1</td>
+                    <td class="p-3 font-bold text-emerald-800 mono">YES</td>
+                    <td class="p-3">Retrieves representation; must never mutate server state.</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-bold mono">POST</td>
+                    <td class="p-3">Create</td>
+                    <td class="p-3 mono">/notes</td>
+                    <td class="p-3 font-bold text-rose-800 mono">NO</td>
+                    <td class="p-3">Submits new payload. Repeating 5 times creates 5 distinct notes!</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-bold mono">PUT</td>
+                    <td class="p-3">Update (Replace)</td>
+                    <td class="p-3 mono">/notes/1</td>
+                    <td class="p-3 font-bold text-emerald-800 mono">YES</td>
+                    <td class="p-3">Replaces the entire target resource representation at <code>/notes/1</code>.</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-bold mono">PATCH</td>
+                    <td class="p-3">Update (Partial)</td>
+                    <td class="p-3 mono">/notes/1</td>
+                    <td class="p-3 font-bold text-amber-800 mono">Context-Dependent</td>
+                    <td class="p-3">Modifies only selected fields (e.g. updating <code>description</code> only).</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-bold mono">DELETE</td>
+                    <td class="p-3">Delete</td>
+                    <td class="p-3 mono">/notes/1</td>
+                    <td class="p-3 font-bold text-emerald-800 mono">YES</td>
+                    <td class="p-3">Removes target resource. Repeating leaves the server in the same state (deleted).</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Interactive Status Code Explorer -->
+          <div class="editorial-card p-6 rounded-xl space-y-4">
+            <h3 class="serif-title text-2xl">Interactive HTTP Status Code Explorer ("The Headline of the Server's Answer")</h3>
+            <div class="flex flex-wrap gap-2 text-xs mono">
+              <button onclick="showStatusDetail('200')" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded font-bold">200 OK</button>
+              <button onclick="showStatusDetail('201')" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded font-bold">201 Created</button>
+              <button onclick="showStatusDetail('204')" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded font-bold">204 No Content</button>
+              <button onclick="showStatusDetail('304')" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded font-bold">304 Not Modified</button>
+              <button onclick="showStatusDetail('400')" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded font-bold">400 Bad Request</button>
+              <button onclick="showStatusDetail('401')" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded font-bold">401 Unauthorized</button>
+              <button onclick="showStatusDetail('403')" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded font-bold">403 Forbidden</button>
+              <button onclick="showStatusDetail('404')" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded font-bold">404 Not Found</button>
+              <button onclick="showStatusDetail('500')" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded font-bold">500 Internal Error</button>
+            </div>
+            <div id="status-code-box" class="p-4 bg-[#121212] text-[#F6F3EB] rounded-lg text-xs mono"></div>
+          </div>
+        </div>
+      `,
+
+      'http-inputs': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">LECTURE 1 (§11) & LECTURE 2 (§1)</span>
+              <span>Route Params, Query Params, Body & Headers</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">Where Request Data Lives: The 4 HTTP Inputs</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2 leading-relaxed">
+              Clients send data to your Express backend in four distinct places. Understanding how Express extracts each one—and why route registration order matters—is essential for clean API design.
+            </p>
+          </div>
+
+          <!-- Interactive 4-Input Dissector Lab -->
+          <div class="editorial-card p-6 rounded-xl space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#121212]/20 pb-4">
+              <div>
+                <span class="text-xs mono uppercase font-bold">Interactive Express Request Dissector</span>
+                <h3 class="serif-title text-2xl">Edit the Request & Inspect <code>req.params</code>, <code>req.query</code>, <code>req.body</code> & <code>req.headers</code></h3>
+              </div>
+              <span class="text-xs mono px-2.5 py-1 bg-[#121212] text-[#F6F3EB] rounded">Live Parser</span>
+            </div>
+
+            <div class="grid md:grid-cols-12 gap-3 text-xs mono">
+              <div class="md:col-span-3">
+                <label class="block font-bold mb-1">HTTP Method</label>
+                <select id="dissect-method" onchange="updateRequestDissector()" class="w-full p-2.5 bg-[#F6F3EB] border border-[#121212] rounded font-bold">
+                  <option value="POST">POST</option>
+                  <option value="GET">GET</option>
+                  <option value="PUT">PUT</option>
+                  <option value="PATCH">PATCH</option>
+                  <option value="DELETE">DELETE</option>
+                </select>
+              </div>
+              <div class="md:col-span-9">
+                <label class="block font-bold mb-1">Incoming URL (Route pattern: <code>/notes/:id</code>)</label>
+                <input id="dissect-url" type="text" value="/notes/42?search=javascript&page=2" oninput="updateRequestDissector()" class="w-full p-2.5 bg-[#F6F3EB] border border-[#121212] rounded" />
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4 text-xs mono">
+              <div>
+                <label class="block font-bold mb-1">Request Headers</label>
+                <textarea id="dissect-headers" rows="3" oninput="updateRequestDissector()" class="w-full p-2.5 bg-[#F6F3EB] border border-[#121212] rounded">{
+  "Content-Type": "application/json",
+  "Authorization": "Bearer secret-jwt-token"
+}</textarea>
+              </div>
+              <div>
+                <label class="block font-bold mb-1">Request Body (Requires <code>app.use(express.json())</code>)</label>
+                <textarea id="dissect-body" rows="3" oninput="updateRequestDissector()" class="w-full p-2.5 bg-[#F6F3EB] border border-[#121212] rounded">{
+  "title": "Revise Promises",
+  "description": "Practice async/await error handling"
+}</textarea>
+              </div>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs mono pt-2">
+              <div class="p-3 bg-[#F6F3EB] border border-[#121212] rounded-lg">
+                <div class="text-[10px] font-bold uppercase text-[#52504C] border-b border-[#121212]/20 pb-1 mb-1.5">1. req.params (Which resource?)</div>
+                <pre id="out-req-params" class="text-[11px] overflow-x-auto font-bold"></pre>
+                <div class="text-[10px] text-[#52504C] mt-1">Note: Always strings! Convert via <code>Number()</code> if needed.</div>
+              </div>
+              <div class="p-3 bg-[#F6F3EB] border border-[#121212] rounded-lg">
+                <div class="text-[10px] font-bold uppercase text-[#52504C] border-b border-[#121212]/20 pb-1 mb-1.5">2. req.query (Which filter/view?)</div>
+                <pre id="out-req-query" class="text-[11px] overflow-x-auto font-bold"></pre>
+                <div class="text-[10px] text-[#52504C] mt-1">Used for search, sort, filter, pagination.</div>
+              </div>
+              <div class="p-3 bg-[#F6F3EB] border border-[#121212] rounded-lg">
+                <div class="text-[10px] font-bold uppercase text-[#52504C] border-b border-[#121212]/20 pb-1 mb-1.5">3. req.body (What payload?)</div>
+                <pre id="out-req-body" class="text-[11px] overflow-x-auto font-bold"></pre>
+                <div class="text-[10px] text-[#52504C] mt-1">Undefined unless <code>express.json()</code> runs first!</div>
+              </div>
+              <div class="p-3 bg-[#F6F3EB] border border-[#121212] rounded-lg">
+                <div class="text-[10px] font-bold uppercase text-[#52504C] border-b border-[#121212]/20 pb-1 mb-1.5">4. req.headers (What metadata?)</div>
+                <pre id="out-req-headers" class="text-[11px] overflow-x-auto font-bold"></pre>
+                <div class="text-[10px] text-[#52504C] mt-1">Carries Auth tokens & Content-Type.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Route Order Gotcha Card -->
+          <div class="editorial-card p-6 rounded-xl space-y-3">
+            <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] text-xs mono rounded">Critical Express Gotcha</span>
+            <h3 class="serif-title text-2xl">Why <code>/notes/search</code> MUST Be Registered Before <code>/notes/:index</code></h3>
+            <p class="text-xs lg:text-sm text-[#52504C]">
+              Express evaluates routes top-to-bottom in the exact order they are registered. If you place <code>app.get("/notes/:index")</code> above <code>app.get("/notes/search")</code> and a user requests <code>GET /notes/search?title=js</code>, Express matches <code>:index = "search"</code>! Then <code>Number("search")</code> evaluates to <code>NaN</code> and returns a false <code>404 Note not found</code>.
+            </p>
+          </div>
+        </div>
+      `,
+
+      'notes-crud-sim': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">SERVER BASICS (§CODE 1)</span>
+              <span>In-Memory Notes CRUD Simulator & splice() vs delete</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">In-Memory Notes API & The <code>splice()</code> vs <code>delete</code> Trap</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2 leading-relaxed">
+              Test every endpoint from Rahul's Lecture 1 Notes Backend below, and see why <code>notes.splice(index, 1)</code> is required instead of the JavaScript <code>delete</code> operator.
+            </p>
+          </div>
+
+          <!-- Interactive Postman + RAM Server Simulator -->
+          <div class="editorial-card p-6 rounded-xl space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#121212]/20 pb-4">
+              <div>
+                <span class="text-xs mono uppercase font-bold">Interactive Postman & RAM State Simulator</span>
+                <h3 class="serif-title text-2xl">Live Notes Backend (<code>const notes = []</code> in RAM)</h3>
+              </div>
+              <button onclick="crashAndRestartServer()" class="editorial-btn bg-[#121212] text-[#F6F3EB] px-3 py-1.5 rounded text-xs mono font-semibold">
+                💥 Stop & Restart Server (Ctrl+C -> node index.js)
+              </button>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-5">
+              <!-- Controls -->
+              <div class="lg:col-span-5 space-y-3 text-xs mono">
+                <div class="p-3.5 bg-[#F6F3EB] border border-[#121212] rounded-lg space-y-2">
+                  <div class="font-bold uppercase">1. POST /notes (Create Note)</div>
+                  <input id="sim-note-title" type="text" value="Master Express" placeholder="Title" class="w-full p-2 bg-white border border-[#121212] rounded" />
+                  <input id="sim-note-desc" type="text" value="Build REST CRUD endpoints" placeholder="Description" class="w-full p-2 bg-white border border-[#121212] rounded" />
+                  <button onclick="simPostNote()" class="editorial-btn bg-[#121212] text-[#F6F3EB] w-full py-2 rounded font-bold">Send POST /notes</button>
+                </div>
+
+                <div class="p-3.5 bg-[#F6F3EB] border border-[#121212] rounded-lg space-y-2">
+                  <div class="font-bold uppercase">2. Search / Delete by Index</div>
+                  <div class="flex gap-2">
+                    <input id="sim-search-q" type="text" placeholder="Search title (e.g. http)" class="flex-1 p-2 bg-white border border-[#121212] rounded" />
+                    <button onclick="simSearchNotes()" class="editorial-btn bg-[#EFECE3] px-3 py-1.5 rounded font-bold">GET /search</button>
+                  </div>
+                  <div class="flex gap-2 pt-1">
+                    <input id="sim-del-idx" type="number" value="0" min="0" class="w-20 p-2 bg-white border border-[#121212] rounded" />
+                    <button onclick="simDeleteNote('splice')" class="editorial-btn bg-[#121212] text-[#F6F3EB] flex-1 py-1.5 rounded font-bold">DELETE (splice)</button>
+                    <button onclick="simDeleteNote('delete')" class="editorial-btn bg-[#E6E1D5] px-2.5 py-1.5 rounded">❌ delete op</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- RAM & Response View -->
+              <div class="lg:col-span-7 flex flex-col justify-between space-y-3">
+                <div class="p-4 bg-[#F6F3EB] border border-[#121212] rounded-lg flex-1 space-y-2">
+                  <div class="flex justify-between items-center text-xs mono">
+                    <span class="font-bold uppercase">Server RAM (<code>const notes = [...]</code>)</span>
+                    <span id="ram-count-badge" class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded text-[10px]">Length: 2</span>
+                  </div>
+                  <pre id="ram-array-view" class="text-xs mono overflow-x-auto whitespace-pre-wrap leading-relaxed"></pre>
+                </div>
+
+                <div class="bg-[#121212] text-[#F6F3EB] p-4 rounded-lg text-xs mono space-y-1">
+                  <div class="flex justify-between">
+                    <span class="text-[#E6E1D5]">LAST HTTP RESPONSE:</span>
+                    <span id="sim-http-status" class="font-bold text-emerald-400">200 OK</span>
+                  </div>
+                  <pre id="sim-http-body" class="text-[11px] overflow-x-auto text-[#F6F3EB]/90"></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `,
+
+      'middleware-pipeline': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">LECTURE 1 (§12) & SERVER BASICS</span>
+              <span>Express Middleware Pipeline & next()</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">Middleware: The Airport Security Checkpoints</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2 leading-relaxed">
+              An Express middleware is a function with access to <code>(req, res, next)</code> that runs during the request-response cycle. Like airport security stations, each middleware can inspect/modify the request, block it early with a response, or call <code>next()</code> to pass control onward.
+            </p>
+          </div>
+
+          <!-- Interactive Middleware Pipeline Simulator -->
+          <div class="editorial-card p-6 rounded-xl space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#121212]/20 pb-4">
+              <div>
+                <span class="text-xs mono uppercase font-bold">Interactive Pipeline Simulator</span>
+                <h3 class="serif-title text-2xl">Test <code>GET /restricted?age=...</code> Through 3 Checkpoints</h3>
+              </div>
+              <div class="flex flex-wrap items-center gap-2 text-xs mono">
+                <label class="font-bold">Query Age:</label>
+                <input id="mw-age-input" type="number" value="21" class="w-16 p-1.5 bg-[#F6F3EB] border border-[#121212] rounded font-bold text-center" />
+                <label class="flex items-center gap-1 ml-2">
+                  <input id="mw-call-next" type="checkbox" checked class="accent-[#121212]" />
+                  <span>Call <code>next()</code> in Logger</span>
+                </label>
+                <button onclick="runMiddlewareSim()" class="editorial-btn bg-[#121212] text-[#F6F3EB] px-3.5 py-1.5 rounded font-semibold">▶ Run Request</button>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-4 gap-3 text-xs mono" id="mw-stations">
+              <div id="mw-st-1" class="p-3.5 bg-[#F6F3EB] border border-[#121212] rounded-lg space-y-1">
+                <div class="font-bold">1. express.json()</div>
+                <div class="text-[11px] text-[#52504C]">Parses JSON stream into req.body, calls next().</div>
+              </div>
+              <div id="mw-st-2" class="p-3.5 bg-[#F6F3EB] border border-[#121212] rounded-lg space-y-1">
+                <div class="font-bold">2. Logger Middleware</div>
+                <div class="text-[11px] text-[#52504C]">Logs req.method & req.url. Must call next()!</div>
+              </div>
+              <div id="mw-st-3" class="p-3.5 bg-[#F6F3EB] border border-[#121212] rounded-lg space-y-1">
+                <div class="font-bold">3. checkAge Guard</div>
+                <div class="text-[11px] text-[#52504C]">If age &lt; 18, returns 403 Forbidden early!</div>
+              </div>
+              <div id="mw-st-4" class="p-3.5 bg-[#F6F3EB] border border-[#121212] rounded-lg space-y-1">
+                <div class="font-bold">4. Route Handler</div>
+                <div class="text-[11px] text-[#52504C]">Sends 200 OK Welcome response.</div>
+              </div>
+            </div>
+
+            <div id="mw-sim-output" class="bg-[#121212] text-[#F6F3EB] p-4 rounded-lg text-xs mono">
+              Configure age (try <code>16</code> vs <code>21</code>, or uncheck <code>next()</code>) and click <strong>"▶ Run Request"</strong>.
+            </div>
+          </div>
+
+          <!-- Code Reference -->
+          <div class="editorial-card p-5 rounded-xl space-y-3">
+            <h3 class="serif-title text-2xl">Route-Specific Middleware (<code>checkAge</code>) Implementation</h3>
+            <pre class="bg-[#121212] text-[#F6F3EB] p-4 rounded-lg text-xs overflow-x-auto">function checkAge(req, res, next) {
+  const age = Number(req.query.age);
+  if (!Number.isFinite(age) || age < 18) {
+    return res.status(403).json({
+      message: "You must be at least 18 years old"
+    });
+  }
+  next(); // Passes control to the route handler
+}
+
+app.get("/restricted", checkAge, (req, res) => {
+  res.json({ message: "Welcome to the restricted page" });
+});</pre>
+          </div>
+        </div>
+      `,
+
+      'zod-internals': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">LECTURE 2 (§2–§4)</span>
+              <span>Zod Schema Validation, Discriminated Unions & Unknown Key Stripping</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">Zod Internals: Defining & Enforcing Data Contracts</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2 leading-relaxed">
+              <strong>The Building Security Analogy:</strong> Frontend validation is a polite receptionist helping visitors fill out a form. Backend validation is the actual security checkpoint—because anyone can bypass your frontend using Postman or <code>curl</code>.
+            </p>
+          </div>
+
+          <!-- Interactive Live Zod safeParse() Engine -->
+          <div class="editorial-card p-6 rounded-xl space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#121212]/20 pb-4">
+              <div>
+                <span class="text-xs mono uppercase font-bold">Interactive Zod safeParse() Engine</span>
+                <h3 class="serif-title text-2xl">Test Presets & Inspect Discriminated Union Output</h3>
+              </div>
+              <div class="flex flex-wrap gap-1.5 text-xs mono">
+                <button onclick="loadZodPreset('valid')" class="editorial-btn bg-[#F6F3EB] px-2.5 py-1 rounded">✓ Valid + Extra Key</button>
+                <button onclick="loadZodPreset('badTypes')" class="editorial-btn bg-[#F6F3EB] px-2.5 py-1 rounded">✗ Wrong Types (123, false)</button>
+                <button onclick="loadZodPreset('whitespace')" class="editorial-btn bg-[#F6F3EB] px-2.5 py-1 rounded">✗ Whitespace Only</button>
+                <button onclick="loadZodPreset('empty')" class="editorial-btn bg-[#F6F3EB] px-2.5 py-1 rounded">✗ Empty Object {}</button>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4 text-xs mono">
+              <div class="space-y-2">
+                <div class="font-bold uppercase">1. Zod Schema Rulebook:</div>
+                <pre class="bg-[#121212] text-[#F6F3EB] p-3.5 rounded-lg text-[11px] overflow-x-auto">const createTodoSchema = z.object({
+  title: z.string().trim().min(1).max(30),
+  description: z.string().trim().min(1).max(100)
+});</pre>
+                <div class="font-bold uppercase pt-1">2. Incoming <code>req.body</code> JSON:</div>
+                <textarea id="zod-live-input" rows="5" oninput="evaluateLiveZod()" class="w-full p-3 bg-[#F6F3EB] border-2 border-[#121212] rounded-lg text-xs"></textarea>
+                <div class="flex items-center justify-between pt-1">
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" id="zod-strict-toggle" onchange="evaluateLiveZod()" class="accent-[#121212]" />
+                    <span>Enable <code>.strict()</code> (Reject unknown keys instead of stripping)</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="space-y-2 flex flex-col justify-between">
+                <div>
+                  <div class="font-bold uppercase mb-2">3. <code>createTodoSchema.safeParse(req.body)</code> Return Value:</div>
+                  <pre id="zod-live-result" class="bg-[#121212] text-[#F6F3EB] p-4 rounded-lg text-[11px] overflow-x-auto min-h-[220px]"></pre>
+                </div>
+                <div id="zod-http-badge" class="p-3 bg-[#F6F3EB] border border-[#121212] rounded-lg text-xs font-medium"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Deep Dive Cards: Discriminated Union & Reusable Middleware -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="editorial-card p-5 rounded-xl space-y-3">
+              <h3 class="serif-title text-2xl">Why Use <code>result.data</code> Instead of <code>req.body</code>?</h3>
+              <p class="text-xs text-[#52504C] leading-relaxed">
+                1. <strong>Transformations applied:</strong> <code>.trim()</code> removes leading/trailing spaces and <code>.default("")</code> populates missing optional fields inside <code>result.data</code>—whereas <code>req.body</code> still holds the raw untrimmed input!<br>
+                2. <strong>Unknown key stripping:</strong> By default, <code>z.object()</code> strips unrecognized keys (like an attacker sending <code>"isAdmin": true</code>) from <code>result.data</code>.
+              </p>
+            </div>
+
+            <div class="editorial-card p-5 rounded-xl space-y-3">
+              <h3 class="serif-title text-2xl">Reusable Higher-Order Zod Middleware</h3>
+              <pre class="bg-[#121212] text-[#F6F3EB] p-3.5 rounded-lg text-[11px] overflow-x-auto">function validateBody(schema) {
+  return (req, res, next) => {
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: result.error.issues.map(i => ({
+          field: i.path.join("."),
+          message: i.message
+        }))
+      });
+    }
+    req.body = result.data; // Replace with sanitized data!
+    next();
+  };
+}</pre>
+          </div>
+        </div>
+      `,
+
+      'scaling-persistence': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">LECTURE 2 (§5–§8)</span>
+              <span>RAM vs JSON Files, Horizontal Scaling & Load Balancer Split-Brain</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">Persistence & Why Local JSON Files Fail Under Load Balancers</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2 leading-relaxed">
+              An in-memory array is like a <strong>whiteboard</strong>—wiped clean whenever the Node process restarts. Writing to a local <code>todos.json</code> file survives restarts, but breaks down under concurrent writes and horizontal scaling.
+            </p>
+          </div>
+
+          <!-- Interactive Three Receptionists / Load Balancer Split-Brain Simulator -->
+          <div class="editorial-card p-6 rounded-xl space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#121212]/20 pb-4">
+              <div>
+                <span class="text-xs mono uppercase font-bold">§7 Interactive Architecture Simulator</span>
+                <h3 class="serif-title text-2xl">The "Three Receptionists" Split-Brain Problem (Round-Robin Load Balancer)</h3>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button onclick="simClusterRequest('file', 'POST')" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded text-xs mono font-semibold">1. POST (Local todos.json)</button>
+                <button onclick="simClusterRequest('file', 'GET')" class="editorial-btn bg-[#F6F3EB] px-3 py-1.5 rounded text-xs mono font-semibold">2. GET (Local todos.json)</button>
+                <button onclick="simClusterRequest('db', 'POST')" class="editorial-btn bg-[#121212] text-[#F6F3EB] px-3 py-1.5 rounded text-xs mono font-semibold">3. POST (Shared MongoDB)</button>
+                <button onclick="resetClusterSim()" class="editorial-btn bg-[#E6E1D5] px-2.5 py-1.5 rounded text-xs mono">↺ Reset</button>
+              </div>
+            </div>
+
+            <p class="text-xs text-[#52504C]">
+              Click <strong>"1. POST (Local todos.json)"</strong> once, then click <strong>"2. GET (Local todos.json)"</strong>. Watch how the Load Balancer routes the write to <strong>API Instance A</strong>, and the next read to <strong>API Instance B</strong>—which returns stale/empty data because each server has its own separate local disk!
+            </p>
+
+            <div class="grid md:grid-cols-3 gap-4 text-xs mono">
+              <div id="inst-box-A" class="p-4 bg-[#F6F3EB] border-2 border-[#121212] rounded-xl space-y-1.5">
+                <div class="font-bold flex justify-between"><span>API Instance A</span><span id="inst-tag-A" class="text-[10px]">Ready</span></div>
+                <div id="inst-file-A" class="text-[11px] text-[#52504C] bg-white p-2 rounded border border-[#121212]/30">A's todos.json: []</div>
+              </div>
+              <div id="inst-box-B" class="p-4 bg-[#F6F3EB] border-2 border-[#121212] rounded-xl space-y-1.5">
+                <div class="font-bold flex justify-between"><span>API Instance B</span><span id="inst-tag-B" class="text-[10px]">Ready</span></div>
+                <div id="inst-file-B" class="text-[11px] text-[#52504C] bg-white p-2 rounded border border-[#121212]/30">B's todos.json: []</div>
+              </div>
+              <div id="inst-box-C" class="p-4 bg-[#F6F3EB] border-2 border-[#121212] rounded-xl space-y-1.5">
+                <div class="font-bold flex justify-between"><span>API Instance C</span><span id="inst-tag-C" class="text-[10px]">Ready</span></div>
+                <div id="inst-file-C" class="text-[11px] text-[#52504C] bg-white p-2 rounded border border-[#121212]/30">C's todos.json: []</div>
+              </div>
+            </div>
+
+            <div class="p-3.5 bg-[#E6E1D5] border border-[#121212] rounded-xl text-xs mono flex items-center justify-between">
+              <span class="font-bold">SHARED MONGODB SOURCE OF TRUTH:</span>
+              <span id="shared-db-view">[ ] (0 documents)</span>
+            </div>
+
+            <div id="cluster-narration" class="bg-[#121212] text-[#F6F3EB] p-3.5 rounded-lg text-xs mono">
+              Load Balancer Next Target: Instance A
+            </div>
+          </div>
+
+          <!-- 7 Reasons Local Files Fail + Vertical vs Horizontal Scaling -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="editorial-card p-5 rounded-xl space-y-2">
+              <h3 class="serif-title text-2xl">7 Reasons <code>todos.json</code> Fails in Production</h3>
+              <ol class="text-xs text-[#52504C] space-y-1.5 list-decimal pl-4">
+                <li><strong>Concurrent writes & Lost updates:</strong> Two requests reading old state and writing simultaneously overwrite each other.</li>
+                <li><strong>Whole-file rewrites:</strong> Rewriting a 50MB JSON file just to toggle one boolean is O(N) disk I/O.</li>
+                <li><strong>No query engine / indexes:</strong> Filtering requires reading the entire file into RAM.</li>
+                <li><strong>Multiple instances (Split-Brain):</strong> Separate servers have separate filesystems.</li>
+                <li><strong>Partial write corruption:</strong> Power loss mid-write leaves malformed JSON.</li>
+              </ol>
+            </div>
+
+            <div class="editorial-card p-5 rounded-xl space-y-2">
+              <h3 class="serif-title text-2xl">Vertical vs. Horizontal Scaling</h3>
+              <p class="text-xs text-[#52504C] leading-relaxed">
+                • <strong>Vertical Scaling (Scale Up):</strong> Replace a small kitchen with a bigger kitchen (add more CPU/RAM to 1 server). Simple, but hits hardware limits and remains a Single Point of Failure.<br><br>
+                • <strong>Horizontal Scaling (Scale Out):</strong> Open multiple kitchens (API instances A, B, C) behind a <strong>Load Balancer</strong>, all connected to one shared Database source of truth.
+              </p>
+            </div>
+          </div>
+        </div>
+      `,
+
+      'mongodb-mongoose': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">LECTURE 2 (§9–§15)</span>
+              <span>MongoDB Atlas, Mongoose ODM, Schema vs Model & Connection Pools</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">MongoDB Internals, Mongoose ODM & Connection Pools</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2 leading-relaxed">
+              MongoDB stores records as binary <strong>BSON documents</strong> inside collections. <strong>Mongoose</strong> is an Object Data Modeling (ODM) library in your Node.js app that provides schemas, models, validation, and connection pooling over the MongoDB driver.
+            </p>
+          </div>
+
+          <!-- Connection String Dissector & Security -->
+          <div class="editorial-card p-6 rounded-xl space-y-4">
+            <h3 class="serif-title text-2xl">1. Anatomy of a MongoDB Atlas SRV Connection URI</h3>
+            <div class="bg-[#121212] text-[#F6F3EB] p-3.5 rounded-lg text-xs mono overflow-x-auto">
+              <span class="text-amber-300">mongodb+srv://</span><span class="text-emerald-300">rahul_db_user:MySecretPass</span>@<span class="text-sky-300">cluster0.ab12c.mongodb.net</span>/<span class="text-rose-300">notesApp</span>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-4 text-xs">
+              <div class="p-3 bg-[#F6F3EB] border border-[#121212] rounded-lg">
+                <strong class="mono block">Important Lecture Note on Database Name:</strong>
+                <span class="text-[#52504C]"><code>await mongoose.connect(uri)</code> connects your server to the cluster, but you must include the database name (<code>/notesApp</code>) after the last slash so it targets your specific database!</span>
+              </div>
+              <div class="p-3 bg-[#F6F3EB] border border-[#121212] rounded-lg">
+                <strong class="mono block">Network Access vs. DB Permissions (Office Analogy):</strong>
+                <span class="text-[#52504C]"><strong>Network Access (IP Whitelist)</strong> decides who can enter the building. <strong>DB User Permissions</strong> decide which filing cabinets they can read/write once inside.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Checkout Counter Connection Pool Visualizer -->
+          <div class="editorial-card p-6 rounded-xl space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#121212]/20 pb-4">
+              <div>
+                <span class="text-xs mono uppercase font-bold">§15 Interactive Connection Pool Visualizer</span>
+                <h3 class="serif-title text-2xl">The Supermarket Checkout Counter Analogy</h3>
+              </div>
+              <button onclick="firePoolQuery()" class="editorial-btn bg-[#121212] text-[#F6F3EB] px-4 py-1.5 rounded text-xs mono font-semibold">
+                ⚡ Dispatch Concurrent DB Query
+              </button>
+            </div>
+            <p class="text-xs text-[#52504C]">
+              Opening a brand-new TCP + TLS + Auth connection to MongoDB Atlas for every HTTP request is like building a new checkout counter for every customer. Instead, the driver maintains a <strong>Connection Pool</strong> of reusable open connections:
+            </p>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 text-xs mono" id="pool-counters-grid"></div>
+          </div>
+
+          <!-- Mongoose Schema vs Model & CRUD Return Types -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="editorial-card p-5 rounded-xl space-y-3">
+              <h3 class="serif-title text-2xl">Blueprint (Schema) vs. Factory (Model)</h3>
+              <p class="text-xs text-[#52504C]">A Mongoose schema is enforced at the <strong>application layer</strong> (other services writing directly to MongoDB can bypass it unless DB-level validation is also set).</p>
+              <pre class="bg-[#121212] text-[#F6F3EB] p-3.5 rounded-lg text-[11px] overflow-x-auto">// 1. Schema = Blueprint
+const todoSchema = new mongoose.Schema({
+  title: { type: String, required: true, trim: true, maxlength: 30 },
+  description: { type: String, default: "", maxlength: 100 },
+  completed: { type: Boolean, default: false }
+});
+
+// 2. Model = Factory interface for 'todos' collection
+const Todo = mongoose.model("Todo", todoSchema);</pre>
+            </div>
+
+            <div class="editorial-card p-5 rounded-xl space-y-3">
+              <h3 class="serif-title text-2xl">Mongoose CRUD Return Signatures</h3>
+              <ul class="text-xs text-[#52504C] space-y-2 mono">
+                <li class="p-2 bg-[#F6F3EB] border border-[#121212] rounded">
+                  <strong>Todo.create(doc):</strong> Validates, inserts, and resolves to the newly created document with its generated <code>_id: ObjectId(...)</code>.
+                </li>
+                <li class="p-2 bg-[#F6F3EB] border border-[#121212] rounded">
+                  <strong>Todo.find(filter):</strong> Resolves to an array of documents <code>[{}, {}]</code> or <code>[]</code> if none match.
+                </li>
+                <li class="p-2 bg-[#F6F3EB] border border-[#121212] rounded">
+                  <strong>Todo.findById(id) / findOne():</strong> Resolves to a single object <code>{}</code> or <code>null</code> if not found.
+                </li>
+                <li class="p-2 bg-[#F6F3EB] border border-[#121212] rounded">
+                  <strong>Todo.findByIdAndUpdate(id, update, { new: true, runValidators: true }):</strong> Returns the updated doc (when <code>new: true</code>) or <code>null</code>.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      `,
+
+      'e2e-checkpoints': () => `
+        <div class="space-y-8 animate-pop">
+          <div class="border-b-2 border-[#121212] pb-6">
+            <div class="flex items-center gap-2 text-xs mono text-[#52504C] mb-2">
+              <span class="px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">LECTURE 2 (§16–§18)</span>
+              <span>Production End-to-End Todo API & Feynman Mastery Checkpoints</span>
+            </div>
+            <h2 class="serif-title text-4xl lg:text-5xl">End-to-End Todo API & Mastery Checkpoints</h2>
+            <p class="text-sm lg:text-base text-[#52504C] mt-2 leading-relaxed">
+              Review the complete production-grade Express + Zod + Mongoose architecture (<code>Parse → Validate → Authorize → Model Operation → Await → Respond</code>), test your knowledge on the 6 official quiz questions, and complete the Feynman revision checklist.
+            </p>
+          </div>
+
+          <!-- Complete E2E Code Reference -->
+          <div class="editorial-card p-6 rounded-xl space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="serif-title text-2xl">Complete Production Todo API (<code>index.js</code>)</h3>
+              <span class="text-xs mono px-2 py-0.5 bg-[#121212] text-[#F6F3EB] rounded">Express + Zod + Mongoose</span>
+            </div>
+            <pre class="bg-[#121212] text-[#F6F3EB] p-4 rounded-lg text-xs overflow-x-auto max-h-96 leading-relaxed">require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const { z } = require("zod");
+
+const app = express();
+app.use(express.json());
+
+const createTodoSchema = z.object({
+  title: z.string().trim().min(1).max(30),
+  description: z.string().trim().max(100).default("")
+});
+
+const updateTodoSchema = z.object({
+  title: z.string().trim().min(1).max(30).optional(),
+  description: z.string().trim().max(100).optional(),
+  completed: z.boolean().optional()
+}).refine((val) => Object.keys(val).length > 0, {
+  message: "Provide at least one field to update"
+});
+
+const todoSchema = new mongoose.Schema({
+  title: { type: String, required: true, trim: true, maxlength: 30 },
+  description: { type: String, default: "", maxlength: 100 },
+  completed: { type: Boolean, default: false }
+}, { timestamps: true });
+
+const Todo = mongoose.model("Todo", todoSchema);
+
+app.post("/todos", async (req, res, next) => {
+  const parsed = createTodoSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({
+      message: "Validation failed",
+      errors: parsed.error.issues.map(i => ({ field: i.path.join("."), message: i.message }))
+    });
+  }
+  try {
+    const todo = await Todo.create(parsed.data);
+    return res.status(201).json(todo);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+app.patch("/todos/:id", async (req, res, next) => {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return res.status(400).json({ message: "Invalid todo ID" });
+  }
+  const parsed = updateTodoSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: "Validation failed", errors: parsed.error.issues });
+  }
+  try {
+    const todo = await Todo.findByIdAndUpdate(
+      req.params.id,
+      { $set: parsed.data },
+      { new: true, runValidators: true }
+    );
+    if (!todo) return res.status(404).json({ message: "Todo not found" });
+    return res.json(todo);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Centralized Error Handler (Registered after all routes)
+app.use((error, req, res, next) => {
+  console.error(error);
+  if (res.headersSent) return next(error);
+  return res.status(500).json({ message: "Internal server error" });
+});</pre>
+          </div>
+
+          <!-- 6 Interactive Checkpoint Questions -->
+          <div class="editorial-card p-6 rounded-xl space-y-5">
+            <h3 class="serif-title text-3xl border-b border-[#121212]/20 pb-2">Backend, Zod & MongoDB Checkpoint (6 Questions)</h3>
+            <div id="quiz-mount" class="space-y-4"></div>
+          </div>
+
+          <!-- Feynman Revision Checklist -->
+          <div class="editorial-card p-6 rounded-xl space-y-4">
+            <h3 class="serif-title text-3xl border-b border-[#121212]/20 pb-2">Feynman-Style Revision Checklist</h3>
+            <div class="grid sm:grid-cols-2 gap-3 text-xs">
+              ${[
+                ['c1', '1. URL Inputs: Explain when to use req.params vs req.query, and why URL inputs arrive as strings.'],
+                ['c2', '2. Zod Boundary: Explain why result.data is used instead of req.body after safeParse() succeeds.'],
+                ['c3', '3. Status Codes: Explain why invalid title input returns 400 Bad Request rather than 404 Not Found.'],
+                ['c4', '4. Split-Brain Scaling: Explain the Three-Receptionists analogy for why local JSON files fail behind a load balancer.'],
+                ['c5', '5. Atlas Security: Distinguish Network Access (IP rules) from Database User Permissions, and why MONGODB_URI belongs in .env.'],
+                ['c6', '6. Async DB & Pools: Explain why Todo.create() must be awaited before returning 201, and how connection pools reuse sockets.']
+              ].map(([key, label]) => `
+                <label class="flex items-start gap-2.5 p-3 bg-[#F6F3EB] border border-[#121212] rounded-lg cursor-pointer hover:bg-[#E6E1D5] transition">
+                  <input type="checkbox" ${appState.checklistItems[key] ? 'checked' : ''} onchange="toggleChecklist('${key}', this.checked)" class="mt-0.5 accent-[#121212]" />
+                  <span class="font-medium leading-relaxed">${label}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `
+    };
+
+    // Module 1: NPM Inspector
+    function showNpmTab(tab) {
+      ['pkg', 'lock', 'modules'].forEach(t => {
+        const b = document.getElementById(`npm-btn-${t}`);
+        if (b) b.classList.toggle('nav-active', t === tab);
+      });
+      const box = document.getElementById('npm-inspector-box');
+      if (!box) return;
+      const content = {
+        pkg: {
+          title: 'package.json — "The Recipe Ingredient List"',
+          desc: 'Records project metadata, scripts ("start": "node index.js"), and declared dependencies (e.g. express, mongoose, zod). MUST be committed to Git.',
+          code: '{\n  "name": "notes-backend",\n  "version": "1.0.0",\n  "main": "index.js",\n  "dependencies": {\n    "express": "^4.21.0",\n    "mongoose": "^8.0.0",\n    "zod": "^3.23.0"\n  }\n}'
+        },
+        lock: {
+          title: 'package-lock.json — "The Exact Brand & Batch Record"',
+          desc: 'Locks the exact resolved versions of every direct and transitive dependency so another developer running npm install gets an identical tree. MUST be committed to Git.',
+          code: '// Ensures reproducible installs across machines and production servers'
+        },
+        modules: {
+          title: 'node_modules/ — "The Stocked Kitchen Pantry"',
+          desc: 'Contains the actual downloaded code for your packages and their transitive dependencies (Package A -> Package B -> Package C). NEVER commit this to Git; regenerate it via npm install!',
+          code: 'Our Application\n └── express\n      ├── body-parser (Transitive dependency)\n      ├── cookie\n      └── path-to-regexp'
+        }
+      };
+      const item = content[tab];
+      box.innerHTML = `
+        <div class="p-4 bg-[#F6F3EB] border border-[#121212] rounded-lg space-y-2">
+          <div class="font-bold mono text-[#121212]">${item.title}</div>
+          <p class="text-[#52504C]">${item.desc}</p>
+          <pre class="bg-[#121212] text-[#F6F3EB] p-3 rounded text-[11px] overflow-x-auto">${item.code}</pre>
+        </div>
+      `;
+    }
+
+    // Module 2: Network Journey Stepper
+    let netStepIdx = 0;
+    const netSteps = [
+      { short: '1. URL Parse', detail: '1. Browser identifies the hostname (e.g., app.100xdevs.com), protocol (https), and path (/notes).' },
+      { short: '2. DNS Lookup', detail: '2. DNS (Phonebook of the Internet) resolves the domain name into the server\'s underlying IP address.' },
+      { short: '3. TCP + TLS', detail: '3. Client establishes a network connection to the destination IP and Port (443 for HTTPS, including TLS encryption handshake).' },
+      { short: '4. HTTP Req', detail: '4. Browser sends the formatted HTTP Request packet (Method + Path + Headers + optional Body).' },
+      { short: '5. Routers', detail: '5. Network routers (delivery hubs) forward packets across fiber/undersea cables toward the destination server.' },
+      { short: '6. Express/DB', detail: '6. Express listener on the port receives the request, runs middleware + route handler, queries MongoDB, and sends an HTTP Response.' },
+      { short: '7. UI Render', detail: '7. Browser interprets the HTTP status code and JSON/HTML response body and updates the screen.' }
+    ];
+
+    function renderNetworkSteps() {
+      const grid = document.getElementById('net-steps-grid');
+      if (!grid) return;
+      grid.innerHTML = netSteps.map((s, i) => `
+        <div class="p-2.5 rounded border border-[#121212] text-center ${i === netStepIdx ? 'bg-[#121212] text-[#F6F3EB] font-bold' : 'bg-[#F6F3EB] text-[#52504C]'}">
+          ${s.short}
+        </div>
+      `).join('');
+      const detail = document.getElementById('net-step-detail');
+      if (detail) detail.innerText = netSteps[netStepIdx].detail;
+    }
+
+    function stepNetworkJourney() {
+      netStepIdx = (netStepIdx + 1) % netSteps.length;
+      renderNetworkSteps();
+    }
+
+    function resetNetworkJourney() {
+      netStepIdx = 0;
+      renderNetworkSteps();
+    }
+
+    function showStatusDetail(code) {
+      const map = {
+        '200': '200 OK — Request succeeded (e.g., GET /notes returned the list).',
+        '201': '201 Created — Request succeeded and created a new resource (e.g., POST /notes).',
+        '204': '204 No Content — Request succeeded (such as DELETE /todos/:id) with no response body.',
+        '304': '304 Not Modified — Resource has not changed since last request; client can use its cached copy.',
+        '400': '400 Bad Request — Client sent invalid syntax or failed Zod schema validation. Do NOT use 404 for validation errors!',
+        '401': '401 Unauthorized — Valid authentication credentials are missing or invalid.',
+        '403': '403 Forbidden — Server understood the request, but the caller is not permitted (e.g., age < 18 in checkAge middleware).',
+        '404': '404 Not Found — The requested route or resource ID does not exist.',
+        '500': '500 Internal Server Error — Unexpected server-side crash, unhandled exception, or database outage.'
+      };
+      const box = document.getElementById('status-code-box');
+      if (box) box.innerText = map[code];
+    }
+
+    // Module 3: HTTP Request Dissector
+    function updateRequestDissector() {
+      const method = document.getElementById('dissect-method').value;
+      const rawUrl = document.getElementById('dissect-url').value.trim();
+      const rawHeaders = document.getElementById('dissect-headers').value;
+      const rawBody = document.getElementById('dissect-body').value;
+
+      const [pathPart, queryPart] = rawUrl.split('?');
+      const segments = pathPart.split('/').filter(Boolean);
+      const params = {};
+      if (segments.length >= 2) {
+        params.id = segments[1];
+      }
+
+      const query = {};
+      if (queryPart) {
+        queryPart.split('&').forEach(pair => {
+          const [k, v] = pair.split('=');
+          if (k) query[decodeURIComponent(k)] = decodeURIComponent(v || '');
+        });
+      }
+
+      let parsedHeaders = {};
+      try { parsedHeaders = JSON.parse(rawHeaders); } catch (e) { parsedHeaders = { error: "Invalid JSON" }; }
+
+      let parsedBody = {};
+      if (method === 'GET' || method === 'DELETE') {
+        parsedBody = "// Usually empty on " + method;
+      } else {
+        try { parsedBody = JSON.parse(rawBody); } catch (e) { parsedBody = "// Invalid JSON in body"; }
+      }
+
+      document.getElementById('out-req-params').innerText = JSON.stringify(params, null, 2);
+      document.getElementById('out-req-query').innerText = JSON.stringify(query, null, 2);
+      document.getElementById('out-req-body').innerText = typeof parsedBody === 'string' ? parsedBody : JSON.stringify(parsedBody, null, 2);
+      document.getElementById('out-req-headers').innerText = JSON.stringify(parsedHeaders, null, 2);
+    }
+
+    // Module 4: In-Memory CRUD Simulator
+    function renderRamState(status = '200 OK', payload = null) {
+      const view = document.getElementById('ram-array-view');
+      const badge = document.getElementById('ram-count-badge');
+      const st = document.getElementById('sim-http-status');
+      const body = document.getElementById('sim-http-body');
+      if (!view) return;
+
+      view.innerText = JSON.stringify(appState.memoryNotes, null, 2);
+      badge.innerText = `Length: ${appState.memoryNotes.length}`;
+      st.innerText = status;
+      st.className = status.startsWith('2') ? 'font-bold text-emerald-400' : 'font-bold text-rose-400';
+      body.innerText = JSON.stringify(payload || { success: true, notes: appState.memoryNotes }, null, 2);
+    }
+
+    function simPostNote() {
+      const title = document.getElementById('sim-note-title').value;
+      const description = document.getElementById('sim-note-desc').value;
+      if (!title.trim() || !description.trim()) {
+        renderRamState('400 Bad Request', { success: false, message: 'Title and description are required' });
+        return;
+      }
+      const newNote = { title, description };
+      appState.memoryNotes.push(newNote);
+      renderRamState('201 Created', { success: true, message: 'Note created successfully', note: newNote });
+    }
+
+    function simSearchNotes() {
+      const q = document.getElementById('sim-search-q').value.toLowerCase();
+      const filtered = appState.memoryNotes.filter(n => n && n.title && n.title.toLowerCase().includes(q));
+      renderRamState('200 OK', { success: true, query: q, notes: filtered });
+    }
+
+    function simDeleteNote(mode) {
+      const idx = Number(document.getElementById('sim-del-idx').value);
+      if (!Number.isInteger(idx) || idx < 0 || idx >= appState.memoryNotes.length) {
+        renderRamState('404 Not Found', { success: false, message: 'Note not found at index ' + idx });
+        return;
+      }
+      if (mode === 'splice') {
+        const deleted = appState.memoryNotes.splice(idx, 1)[0];
+        renderRamState('200 OK', { success: true, method: 'notes.splice(idx, 1)', deletedNote: deleted });
+      } else {
+        delete appState.memoryNotes[idx];
+        renderRamState('200 OK (BUGGY DELETE)', {
+          warning: 'Used delete notes[idx]! Notice how length stayed ' + appState.memoryNotes.length + ' and left a null hole in JSON!',
+          notes: appState.memoryNotes
+        });
+      }
+    }
+
+    function crashAndRestartServer() {
+      appState.memoryNotes = [];
+      renderRamState('Server Restarted (RAM Wiped!)', {
+        notice: 'Process exited and restarted! const notes = [] re-initialized to an empty array. All in-memory notes were lost!'
+      });
+    }
+
+    // Module 5: Middleware Pipeline Simulator
+    function runMiddlewareSim() {
+      const age = Number(document.getElementById('mw-age-input').value);
+      const callNext = document.getElementById('mw-call-next').checked;
+      const out = document.getElementById('mw-sim-output');
+
+      [1, 2, 3, 4].forEach(i => {
+        document.getElementById(`mw-st-${i}`).className = 'p-3.5 bg-[#F6F3EB] border border-[#121212] rounded-lg space-y-1 opacity-50';
+      });
+
+      const highlight = (i) => {
+        document.getElementById(`mw-st-${i}`).className = 'p-3.5 bg-[#121212] text-[#F6F3EB] border border-[#121212] rounded-lg space-y-1';
+      };
+
+      highlight(1);
+      highlight(2);
+
+      if (!callNext) {
+        out.innerHTML = '⚠️ <strong>REQUEST HUNG AT STATION 2 (Logger Middleware):</strong> Neither <code>next()</code> nor <code>res.send()</code> was called! The client is left waiting indefinitely.';
+        return;
+      }
+
+      highlight(3);
+      if (!Number.isFinite(age) || age < 18) {
+        out.innerHTML = '🛑 <strong>BLOCKED AT STATION 3 (checkAge Guard):</strong> Returned <code>403 Forbidden: { "message": "You must be at least 18 years old" }</code>. Route handler (#4) never ran!';
+        return;
+      }
+
+      highlight(4);
+      out.innerHTML = '✓ <strong>200 OK (Reached Station 4 Route Handler):</strong> Passed all middleware checks! Response: <code>{ "message": "Welcome to the restricted page" }</code>';
+    }
+
+    // Module 6: Live Zod safeParse Engine
+    function loadZodPreset(type) {
+      const presets = {
+        valid: '{\n  "title": "   Revise JavaScript   ",\n  "description": "Practice promises and Zod",\n  "isAdmin": true\n}',
+        badTypes: '{\n  "title": 123,\n  "description": false\n}',
+        whitespace: '{\n  "title": "   ",\n  "description": "Valid description"\n}',
+        empty: '{}'
+      };
+      document.getElementById('zod-live-input').value = presets[type];
+      evaluateLiveZod();
+    }
+
+    function evaluateLiveZod() {
+      const inputEl = document.getElementById('zod-live-input');
+      const resEl = document.getElementById('zod-live-result');
+      const badgeEl = document.getElementById('zod-http-badge');
+      const isStrict = document.getElementById('zod-strict-toggle').checked;
+      if (!inputEl || !resEl) return;
+
+      let parsedJson;
+      try {
+        parsedJson = JSON.parse(inputEl.value);
+      } catch (err) {
+        resEl.innerText = '// Express express.json() failed before Zod even ran!\nSyntaxError: ' + err.message;
+        badgeEl.innerText = 'HTTP 400 Bad Request — Malformed JSON syntax';
+        return;
+      }
+
+      if (typeof parsedJson !== 'object' || parsedJson === null || Array.isArray(parsedJson)) {
+        resEl.innerText = JSON.stringify({
+          success: false,
+          error: { issues: [{ code: "invalid_type", expected: "object", path: [], message: "Expected object" }] }
+        }, null, 2);
+        badgeEl.innerText = 'HTTP 400 Bad Request — Expected JSON object';
+        return;
+      }
+
+      const issues = [];
+      const allowedKeys = ['title', 'description'];
+      const extraKeys = Object.keys(parsedJson).filter(k => !allowedKeys.includes(k));
+
+      if (isStrict && extraKeys.length > 0) {
+        issues.push({
+          code: "unrecognized_keys",
+          keys: extraKeys,
+          path: [],
+          message: "Unrecognized key(s) in object: " + extraKeys.map(k => "'" + k + "'").join(", ")
+        });
+      }
+
+      // Validate title
+      if (parsedJson.title === undefined) {
+        issues.push({ code: "invalid_type", expected: "string", received: "undefined", path: ["title"], message: "Required" });
+      } else if (typeof parsedJson.title !== "string") {
+        issues.push({ code: "invalid_type", expected: "string", received: typeof parsedJson.title, path: ["title"], message: "Expected string, received " + typeof parsedJson.title });
+      } else {
+        const trimmedTitle = parsedJson.title.trim();
+        if (trimmedTitle.length < 1) {
+          issues.push({ code: "too_small", minimum: 1, type: "string", path: ["title"], message: "String must contain at least 1 character(s) after .trim()" });
+        } else if (trimmedTitle.length > 30) {
+          issues.push({ code: "too_big", maximum: 30, type: "string", path: ["title"], message: "String must contain at most 30 character(s)" });
+        }
+      }
+
+      // Validate description
+      if (parsedJson.description === undefined) {
+        issues.push({ code: "invalid_type", expected: "string", received: "undefined", path: ["description"], message: "Required" });
+      } else if (typeof parsedJson.description !== "string") {
+        issues.push({ code: "invalid_type", expected: "string", received: typeof parsedJson.description, path: ["description"], message: "Expected string, received " + typeof parsedJson.description });
+      } else {
+        const trimmedDesc = parsedJson.description.trim();
+        if (trimmedDesc.length < 1) {
+          issues.push({ code: "too_small", minimum: 1, type: "string", path: ["description"], message: "String must contain at least 1 character(s) after .trim()" });
+        } else if (trimmedDesc.length > 100) {
+          issues.push({ code: "too_big", maximum: 100, type: "string", path: ["description"], message: "String must contain at most 100 character(s)" });
+        }
+      }
+
+      if (issues.length > 0) {
+        const out = { success: false, error: { issues } };
+        resEl.innerText = JSON.stringify(out, null, 2);
+        badgeEl.innerHTML = '🛑 <strong>HTTP 400 Bad Request</strong> — Validation failed! MongoDB is NOT called.';
+      } else {
+        const sanitized = {
+          title: parsedJson.title.trim(),
+          description: parsedJson.description.trim()
+        };
+        const out = { success: true, data: sanitized };
+        resEl.innerText = JSON.stringify(out, null, 2);
+        const stripNote = extraKeys.length > 0 ? ' (Stripped unknown keys: ' + extraKeys.join(', ') + ')' : '';
+        badgeEl.innerHTML = '✓ <strong>Validation Succeeded!</strong> Pass <code>result.data</code> to <code>Todo.create()</code>' + stripNote + '.';
+      }
+    }
+
+    // Module 7: Load Balancer Split-Brain Simulator
+    function simClusterRequest(storageMode, method) {
+      const instances = ['A', 'B', 'C'];
+      const target = instances[appState.lbIndex % 3];
+      appState.lbIndex++;
+      const nextTarget = instances[appState.lbIndex % 3];
+
+      instances.forEach(id => {
+        document.getElementById(`inst-box-${id}`).className = 'p-4 bg-[#F6F3EB] border-2 border-[#121212] rounded-xl space-y-1.5';
+        document.getElementById(`inst-tag-${id}`).innerText = 'Idle';
+      });
+
+      document.getElementById(`inst-box-${target}`).className = 'p-4 bg-[#E6E1D5] border-2 border-[#121212] shadow-[4px_4px_0px_#121212] rounded-xl space-y-1.5';
+      document.getElementById(`inst-tag-${target}`).innerText = `← Handled ${method}`;
+
+      const narration = document.getElementById('cluster-narration');
+
+      if (storageMode === 'file') {
+        if (method === 'POST') {
+          const newTodo = `Todo#${appState.lbIndex}`;
+          appState.lbLocalStores[target].push(newTodo);
+          document.getElementById(`inst-file-${target}`).innerText = `${target}'s todos.json: ${JSON.stringify(appState.lbLocalStores[target])}`;
+          narration.innerText = `[Round-Robin -> Instance ${target}] Wrote "${newTodo}" ONLY to Instance ${target}'s local disk! Instances ${instances.filter(x => x !== target).join(' & ')} do NOT have it. (Next hop: Instance ${nextTarget})`;
+        } else {
+          const data = appState.lbLocalStores[target];
+          narration.innerText = `[Round-Robin -> Instance ${target}] Client requested GET /todos from Instance ${target} -> Returned ${JSON.stringify(data)}! Split-Brain bug: data written to other instances is missing here!`;
+        }
+      } else {
+        const newTodo = `Todo#${appState.lbIndex}`;
+        appState.lbSharedDb.push(newTodo);
+        document.getElementById('shared-db-view').innerText = `${JSON.stringify(appState.lbSharedDb)} (${appState.lbSharedDb.length} documents)`;
+        narration.innerText = `[Round-Robin -> Instance ${target}] Instance ${target} wrote "${newTodo}" to Shared MongoDB! Every instance (A, B, C) now sees the exact same source of truth.`;
+      }
+    }
+
+    function resetClusterSim() {
+      appState.lbIndex = 0;
+      appState.lbLocalStores = { A: [], B: [], C: [] };
+      appState.lbSharedDb = [];
+      ['A', 'B', 'C'].forEach(id => {
+        document.getElementById(`inst-file-${id}`).innerText = `${id}'s todos.json: []`;
+        document.getElementById(`inst-tag-${id}`).innerText = 'Ready';
+        document.getElementById(`inst-box-${id}`).className = 'p-4 bg-[#F6F3EB] border-2 border-[#121212] rounded-xl space-y-1.5';
+      });
+      document.getElementById('shared-db-view').innerText = '[ ] (0 documents)';
+      document.getElementById('cluster-narration').innerText = 'Load Balancer Next Target: Instance A';
+    }
+
+    // Module 8: Connection Pool Visualizer
+    const poolState = [true, false, false, false, false];
+    function renderPoolCounters() {
+      const grid = document.getElementById('pool-counters-grid');
+      if (!grid) return;
+      grid.innerHTML = poolState.map((busy, idx) => `
+        <div class="p-3 rounded-lg border border-[#121212] text-center ${busy ? 'bg-[#121212] text-[#F6F3EB]' : 'bg-[#F6F3EB] text-[#121212]'}">
+          <div class="font-bold">Socket #${idx + 1}</div>
+          <div class="text-[10px] mt-1">${busy ? '⚡ Executing Query' : '✓ Warm & Idle'}</div>
+        </div>
+      `).join('');
+    }
+
+    function firePoolQuery() {
+      const freeIdx = poolState.findIndex(b => !b);
+      const targetIdx = freeIdx !== -1 ? freeIdx : Math.floor(Math.random() * 5);
+      poolState[targetIdx] = true;
+      renderPoolCounters();
+      setTimeout(() => {
+        poolState[targetIdx] = false;
+        renderPoolCounters();
+      }, 900);
+    }
+
+    // Module 9: Official 6-Question Checkpoint Quiz
+    const quizQuestions = [
+      {
+        id: 'q1',
+        q: '1. What happens if you define app.get("/", ...) in Express, but forget to call app.listen(3000)?',
+        options: ['It defaults to port 80', 'Routes are defined, but the server never listens for network connections', 'Express throws a syntax error'],
+        correct: 1,
+        explain: 'Defining routes only registers handlers in memory; app.listen() starts the actual TCP/HTTP listener.'
+      },
+      {
+        id: 'q2',
+        q: '2. Why might req.body be undefined in an Express POST route even when Postman sent valid JSON?',
+        options: ['app.use(express.json()) middleware was not registered before the route', 'POST requests cannot have a body', 'Port 3000 blocks JSON'],
+        correct: 0,
+        explain: 'Express does not parse JSON request bodies by default; you must register app.use(express.json()) prior to your routes.'
+      },
+      {
+        id: 'q3',
+        q: '3. Why should you use notes.splice(index, 1) instead of delete notes[index] when deleting from an in-memory array?',
+        options: ['delete is a syntax error in Node.js', 'delete leaves an empty slot (null in JSON) and does not update array length', 'splice automatically saves to MongoDB'],
+        correct: 1,
+        explain: 'The delete operator removes the property but leaves a sparse hole (null in JSON) with unchanged array length; splice() shifts elements and shrinks the array.'
+      },
+      {
+        id: 'q4',
+        q: '4. What does createTodoSchema.safeParse(req.body) return when validation fails?',
+        options: ['It throws an unhandled exception that crashes Express', 'It returns { success: false, error: ZodError } without throwing', 'It returns { success: false, data: req.body }'],
+        correct: 1,
+        explain: 'safeParse() returns a discriminated union: either { success: true, data } or { success: false, error }, avoiding exceptions for ordinary validation failures.'
+      },
+      {
+        id: 'q5',
+        q: '5. Why does storing data in a local todos.json file fail when you scale horizontally to 3 servers behind a load balancer?',
+        options: ['JSON files cannot store booleans', 'Each server instance has its own separate local filesystem, causing inconsistent/stale reads', 'Load balancers delete local files'],
+        correct: 1,
+        explain: 'Like three receptionists with separate notebooks, a write to Server A\'s local file is invisible when the load balancer routes the next read to Server B.'
+      },
+      {
+        id: 'q6',
+        q: '6. What is the bug in calling Todo.create(parsed.data); res.status(201).json({ message: "Created" }); without await?',
+        options: ['Express responds 201 Created before knowing if the database insert succeeded or failed', 'Mongoose runs synchronously by default', 'It deletes the collection'],
+        correct: 0,
+        explain: 'Todo.create() returns a Promise. Without await, the route immediately sends 201 Created even if the database write fails moments later.'
+      }
+    ];
+
+    function renderQuiz() {
+      const mount = document.getElementById('quiz-mount');
+      if (!mount) return;
+      mount.innerHTML = quizQuestions.map((item) => `
+        <div class="p-4 bg-[#F6F3EB] border border-[#121212] rounded-xl space-y-2.5">
+          <div class="font-semibold text-xs lg:text-sm">${item.q}</div>
+          <div class="flex flex-wrap gap-2">
+            ${item.options.map((opt, oIdx) => `
+              <button onclick="answerQuiz('${item.id}', ${oIdx}, ${item.correct})" class="editorial-btn bg-[#EFECE3] px-3 py-1.5 rounded text-xs mono text-left">
+                ${opt}
+              </button>
+            `).join('')}
+          </div>
+          <div id="feedback-${item.id}" class="hidden text-xs p-2.5 rounded border border-[#121212] mono"></div>
+        </div>
+      `).join('');
+    }
+
+    function answerQuiz(qId, chosen, correct) {
+      const fb = document.getElementById(`feedback-${qId}`);
+      const qObj = quizQuestions.find(x => x.id === qId);
+      fb.classList.remove('hidden');
+      if (chosen === correct) {
+        fb.className = 'text-xs p-2.5 rounded bg-[#121212] text-[#F6F3EB] mono';
+        fb.innerHTML = `✓ Correct! ${qObj.explain}`;
+        appState.quizAnswered[qId] = true;
+      } else {
+        fb.className = 'text-xs p-2.5 rounded bg-[#E6E1D5] border border-[#121212] text-[#121212] mono';
+        fb.innerHTML = `✗ Try again. Hint: ${qObj.explain}`;
+      }
+      updateMasteryUI();
+    }
+
+    function toggleChecklist(key, checked) {
+      appState.checklistItems[key] = checked;
+      updateMasteryUI();
+    }
+
+    // Module Router
+    function switchModule(modId) {
+      appState.currentModule = modId;
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('nav-active'));
+      const activeBtn = document.getElementById(`btn-${modId}`);
+      if (activeBtn) activeBtn.classList.add('nav-active');
+
+      const mount = document.getElementById('content-mount');
+      mount.innerHTML = moduleTemplates[modId]();
+
+      // Initialize module-specific interactive labs
+      if (modId === 'servers-npm') showNpmTab('pkg');
+      if (modId === 'rest-networking') { renderNetworkSteps(); showStatusDetail('200'); }
+      if (modId === 'http-inputs') updateRequestDissector();
+      if (modId === 'notes-crud-sim') renderRamState();
+      if (modId === 'zod-internals') loadZodPreset('valid');
+      if (modId === 'mongodb-mongoose') renderPoolCounters();
+      if (modId === 'e2e-checkpoints') renderQuiz();
+
+      // Close mobile drawer if open
+      const sb = document.getElementById('sidebar');
+      if (window.innerWidth < 1024 && !sb.classList.contains('-translate-x-full')) {
+        sb.classList.add('-translate-x-full');
+      }
+    }
+
+    window.onload = function () {
+      switchModule('servers-npm');
+      updateMasteryUI();
+    };
+  </script>
+</body>
+</html>
