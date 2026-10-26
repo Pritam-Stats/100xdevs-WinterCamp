@@ -15,6 +15,7 @@ c.splice(2, 3)  //deleted 3 times from index 2
 
 console.log(c);
 
-
+let d = [1, 2,3 ,3 ,4]
+console.log(d.indexOf(3));
 
 

@@ -25,8 +25,17 @@ app.get("/notes", (req, res) => {
 
 //post
 app.post("/notes", (req, res) => {
-    const {title, description} = req.body;
-    let newNote = {title, description};
+    //let add a little safety checks
+    const {title, description} = req.body || {};
+    
+    if (typeof title !== "string" || typeof description !== "string"){
+        return res.status(400).json({
+            success: false,
+            message: "No title and description received",
+            data: null
+        })
+    }
+    let newNote = {id: Number(Date.now()), title, description};
 
     notes.push(newNote);
 
@@ -56,14 +65,14 @@ app.get("/notes/search", (req, res) => {
     res.status(200).json({
         success: true,
         message: "Successfully found note.",
-        notes: filteredNotes
+        data: filteredNotes
     })
 })
 
 
 app.get("/notes/:id", (req, res) => {
     const id = Number(req.params.id);
-    if(!Number.isInteger(id) || id<0 || id >= notes.length) {
+    if(!Number.isInteger(id) || id<0) {
         return res.status(404).json({
             success: false,
             message: "Invalid id, no notes found"
@@ -71,29 +80,42 @@ app.get("/notes/:id", (req, res) => {
     }
 
     return res.status(200).json({
-        note: notes[id],
         success: true,
-        message: "Note Found"
+        message: "Note Found",
+        data: notes.filter(n => n.id == id)[0]
     })
 })
 
 
 app.put("/notes/:id", (req, res) => {
+    //put replaces the whole data, even if the client only sends one field put will wipe out the whole field and replace the new data field
     const id = Number(req.params.id);
     if (!Number.isInteger(id) || id < 0 || id >= notes.length) {
         return res.status(404).json({
             success: false,
-            message: "Invalid id, no notes found"
+            message: "Invalid id, no notes found",
+            data: null
         })
     }
 
     const {title, description} = req.body;
-    notes[id] = {title, description};
+    
+    //have to find the index ig
+    const index = notes.findIndex(n => n.id == id)
+    if (index === -1) {
+        return res.status(404).json({
+            success: false,
+            message: "Id Doesn't exist",
+            data: null
+        })
+    }
+    // const index = notes.indexOf(notes.filter(n=>n.id == id)[0])
+    notes[index] = {title, description, id: Date.now()};
 
     return res.status(200).json({
         success: true,
         message: "Note updated successfully.",
-        updatedNote: notes[id]
+        data: `Updated note: ${notes[id]}`
     })
 
 })
@@ -101,7 +123,7 @@ app.put("/notes/:id", (req, res) => {
 
 app.patch("/notes/:id", (req, res) => {
     const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id < 0 || id >= notes.length) {
+    if (!Number.isInteger(id) || id < 0) {
         return res.status(404).json({
             success: false,
             message: "Invalid id, no notes found"
@@ -109,30 +131,33 @@ app.patch("/notes/:id", (req, res) => {
     }
 
     const {title, description} = req.body;
-
-    if (title !== undefined && description !== undefined) {
-        return res.status(400).json({
-            Success: false,
-            Message: "Not allowed. You can only update one field."
-        })
-    }
+    let toUpdate = null;
     
     if (title === undefined && description === undefined) {
         return res.status(400).json({
-            Success: false,
-            Message: "Not allowed. Give only one field to update. otherwise use put method"
+            success: false,
+            message: "Bad req. Nothing received. Nothing Updated"
         })
     }
-
+    const index = notes.findIndex(n => n.id == id)
+    if (index === -1) {
+        return res.status(404).json({
+            success: false,
+            message: "Id Doesn't exist",
+            data: null
+        })
+    }
     if (title !== undefined) {
-        notes[id].title = title;
-    } else if (description !== undefined) {
-        notes[id].description = description;
+        notes[index].title = title;
+        toUpdate = "Title"
+    } if (description !== undefined) {
+        toUpdate = "Description"
+        notes[index].description = description;
     }
 
     return res.status(200).json({
         success: true,
-        message: "Title updated successfully.",
+        message: `${toUpdate} updated successfully.`,
         data: notes[id]
     })
 })
@@ -140,13 +165,25 @@ app.patch("/notes/:id", (req, res) => {
 
 app.delete("/notes/:id", (req, res) => {
     const id = Number(req.params.id);
-    if(!Number.isInteger(id) || id<0 || id >= notes.length){
+    if(!Number.isInteger(id) || id<0 ){
         return res.status(404).json({
             success: false,
             message: "It does not exist."
         })
     }
-    const deletedNote = notes.splice(id, 1);
+    // let targetElem = notes.filter(n => n.id == id) //filter returns a new array
+    // const index = notes.indexOf(targetElem[0])   //This fails when the filtered array is empty, meaning the ID does not exist.
+
+    //so we have findIndex
+    const index = notes.findIndex(n => n.id == id)
+    if (index === -1) {
+        return res.status(404).json({
+            success: false,
+            message: "Id Doesn't exist",
+            data: null
+        })
+    }
+    const deletedNote = notes.splice(index, 1);
     console.log(deletedNote);
 
     return res.status(201).json({
@@ -156,7 +193,6 @@ app.delete("/notes/:id", (req, res) => {
     })
 
 })
-
 
 
 
