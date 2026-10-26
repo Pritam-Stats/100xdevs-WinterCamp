@@ -2,6 +2,34 @@ const express = require("express");
 
 const app = express();
 
+const { z } = require("zod");
+
+//we Prepare a validation schema that defines the expected input format.
+const noteSchema = z.object({
+    title: z.string().min(1).max(30),
+    description: z.string().min(10).max(100)
+})
+
+
+//  Let's create a Zod validation middleware.
+
+function validateBody(schema){
+    return (req, res, next) => {
+        const result = schema.safeParse(req.body);
+
+        if (!result.success) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid inputs provided.",
+                error: result.error.issues
+            })
+        }
+        req.body = result.data
+        next();
+    }
+}
+
+
 app.use(express.json()) //imp middleware to parse/read the json requests 
 
 let notes = [];
@@ -24,17 +52,17 @@ app.get("/notes", (req, res) => {
 
 
 //post
-app.post("/notes", (req, res) => {
+app.post("/notes", validateBody(noteSchema) ,(req, res) => {
     //let add a little safety checks
     const {title, description} = req.body || {};
     
-    if (typeof title !== "string" || typeof description !== "string"){
-        return res.status(400).json({
-            success: false,
-            message: "No title and description received",
-            data: null
-        })
-    }
+    // if (typeof title !== "string" || typeof description !== "string"){
+    //     return res.status(400).json({
+    //         success: false,
+    //         message: "No title and description received",
+    //         data: null
+    //     })
+    // }
     let newNote = {id: Number(Date.now()), title, description};
 
     notes.push(newNote);
@@ -90,7 +118,7 @@ app.get("/notes/:id", (req, res) => {
 app.put("/notes/:id", (req, res) => {
     //put replaces the whole data, even if the client only sends one field put will wipe out the whole field and replace the new data field
     const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id < 0 || id >= notes.length) {
+    if (!Number.isInteger(id) || id < 0) {
         return res.status(404).json({
             success: false,
             message: "Invalid id, no notes found",
@@ -110,12 +138,12 @@ app.put("/notes/:id", (req, res) => {
         })
     }
     // const index = notes.indexOf(notes.filter(n=>n.id == id)[0])
-    notes[index] = {title, description, id: Date.now()};
+    notes[index] = {title, description, id: id};
 
     return res.status(200).json({
         success: true,
-        message: "Note updated successfully.",
-        data: `Updated note: ${notes[id]}`
+        message: "Note updated successfully.", 
+        data: `Updated note: ${notes[index]}`
     })
 
 })
